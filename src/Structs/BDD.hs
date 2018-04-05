@@ -127,10 +127,10 @@ implies bdd1 bdd2 = or (neg bdd1) bdd2
 
 -- | Transform a proposition into a BDD.
 fromProp :: Ord a => Prop a -> BDD a
-fromProp (And       p q) = and     (fromProp p) (fromProp q)
-fromProp (Or        p q) = or      (fromProp p) (fromProp q)
-fromProp (Then      p q) = implies (fromProp p) (fromProp q)
-fromProp (Eq        p q) = eq      (fromProp p) (fromProp q)
+fromProp (p :&: q)       = and     (fromProp p) (fromProp q)
+fromProp (p :|: q)       = or      (fromProp p) (fromProp q)
+fromProp (p :>: q)       = implies (fromProp p) (fromProp q)
+fromProp (p :=: q)       = eq      (fromProp p) (fromProp q)
 fromProp (Negation  p  ) = neg     (fromProp p)
 fromProp x@(Statement _) = Decision x Yes No
 
@@ -147,25 +147,25 @@ mapLeaves x f = f x
 -- mapLeaves No f = f No
 
 propToBDD' :: Ord a => Prop a -> BDD a
-propToBDD' (And p q) =
+propToBDD' (p :&: q) =
     let
         bdd_p = propToBDD' p
         bdd_q = propToBDD' q
     in 
         mapLeaves bdd_p $ and bdd_q
-propToBDD' (Or p q) =
+propToBDD' (p :|: q) =
     let
         bdd_p = propToBDD' p
         bdd_q = propToBDD' q
     in 
         mapLeaves bdd_p $ or bdd_q
-propToBDD' (Then p q) =
+propToBDD' (p :>: q) =
     let
         bdd_p = propToBDD' p
         bdd_q = propToBDD' q
     in 
         mapLeaves bdd_p $ (flip implies) bdd_q
-propToBDD' (Eq p q) =
+propToBDD' (p :=: q) =
     let
         bdd_p = propToBDD' p
         bdd_q = propToBDD' q
@@ -176,7 +176,7 @@ propToBDD' (Negation p)  =
         bdd = propToBDD' p
     in
         neg bdd
-propToBDD' x@(Statement c) = Decision x Yes No
+propToBDD' x@(Statement _) = Decision x Yes No
 
 robdd :: BDD a -> BDD a
 robdd bdd = robdd_aux bdd Map.empty

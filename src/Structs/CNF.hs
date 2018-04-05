@@ -22,9 +22,9 @@ import Structs.NNF
 distr :: Prop a -- ^ Left disjunction operand 
       -> Prop a -- ^ Right disjunction operand
       -> Prop a -- ^ Recursive distributed proposition
-distr (And a b) q = And (distr a q) (distr b q)
-distr p (And a b) = And (distr p a) (distr p b)
-distr p q = Or p q
+distr (a :&: b) q = (distr a q) :&: (distr b q)
+distr p (a :&: b) = (distr p a) :&: (distr p b)
+distr p q = p :|: q
 
 -- | Transform a proposition into conjunctive normal form (CNF).
 cnf :: Prop a -- ^ Input 'Prop' in any form
@@ -32,6 +32,6 @@ cnf :: Prop a -- ^ Input 'Prop' in any form
 cnf = cnf_aux . nnf
 -- The proposition has to be in NNF prior the transformation
     where
-        cnf_aux (And p q) = And (cnf_aux p) (cnf_aux q)
-        cnf_aux (Or p q) = distr (cnf_aux p) (cnf_aux q)
+        cnf_aux (p :&: q) = (cnf_aux p) :&: (cnf_aux q)
+        cnf_aux (p :|: q) = distr (cnf_aux p) (cnf_aux q)
         cnf_aux p = p
