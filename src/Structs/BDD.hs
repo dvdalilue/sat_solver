@@ -86,14 +86,19 @@ apply op bdd1@(Decision x1 y1 n1) bdd2@(Decision x2 y2 n2)
             ldd = op y1 bdd2
             rdd = op n1 bdd2
         in
-            if ldd == rdd then ldd else (Decision x1 ldd rdd)
+            if ldd == rdd then ldd else Decision x1 ldd rdd
     | x1 > x2 = 
         let
             ldd = op y2 bdd1
             rdd = op n2 bdd1
         in
-            if ldd == rdd then ldd else (Decision x2 ldd rdd)
-    | otherwise = Decision x1 (op y1 y2) (op n1 n2)
+            if ldd == rdd then ldd else Decision x2 ldd rdd
+    | otherwise =
+        let
+            ldd = (op y1 y2)
+            rdd = (op n1 n2)
+        in
+            if ldd == rdd then ldd else Decision x1 ldd rdd
 
 -- | Equivalence operation between two BDDs. Commutative.
 eq :: BDD a -> BDD a -> BDD a
