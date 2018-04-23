@@ -2,13 +2,17 @@ module SAT where
 
 import Structs.Essentials.Prop
 import Structs.CNF
+import Structs.NNF
 import Structs.BDD
+import Structs.ANF
 import Tseytin
 
 import Data.List
 import Data.Time.Clock.POSIX
 import System.Random
 import Data.Functor
+import Control.DeepSeq
+import System.CPUTime
 
 import Prelude hiding (and,or)
 
@@ -295,6 +299,8 @@ randFoo = do
     return seed
 -}
 
+graph0 = Graph 3 2 [[2],[1,3],[2]] :: Graph Int
+
 graph1 = Graph 4 4 [[2,4],[1,3],[2,4],[1,3]] :: Graph Int
 
 graph2 = Graph 10 10 [[2],[1,3],[2,5],[2,5,6,7,8],[3,4,6,7],[4,5,7,10],[4,6,8,9,10],[4,7],[5,7],[6,7]] :: Graph Int
@@ -361,3 +367,11 @@ and = foldl1 (:&:)
 --         and_aux [] acc = acc
 --         and_aux (c:cs) acc = and_aux cs (acc :&: c)
 
+benchmark :: Graph Int -> Int -> IO Integer
+benchmark g c = do
+    start <- getCPUTime
+    let r = Structs.ANF.fromProp $ nnf $ graph_coloring g c
+    end <- r `deepseq` getCPUTime
+    return (end - start)
+
+fib = scanl1 (+) $ 0:1:fib
