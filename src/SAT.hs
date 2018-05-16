@@ -1,3 +1,5 @@
+-- {-# LANGUAGE DataKinds #-}
+
 module SAT where
 
 import Structs.Essentials.Prop
@@ -8,6 +10,7 @@ import Structs.ANF
 import Tseytin
 
 import Data.List
+-- import Data.Pattern
 import Data.Time.Clock.POSIX
 import System.Random
 import Data.Functor
@@ -301,10 +304,12 @@ randFoo = do
 
 graph0 = Graph 3 2 [[2],[1,3],[2]] :: Graph Int
 
+-- benchmark 3 colors: 30391471000000 picoseconds
 graph1 = Graph 4 4 [[2,4],[1,3],[2,4],[1,3]] :: Graph Int
 
 graph2 = Graph 10 10 [[2],[1,3],[2,5],[2,5,6,7,8],[3,4,6,7],[4,5,7,10],[4,6,8,9,10],[4,7],[5,7],[6,7]] :: Graph Int
 
+-- benchmark 3 colors: 1311235211000000 picoseconds
 graph3 = Graph 5 5 [[3,5],[3,4,5],[1,2,4],[2,3,5],[1,2,4]] :: Graph Int
 
 possibleColorings v nc = [Statement (n,c) | n <- [1..v], c <- take nc ['A'..'Z']]
@@ -374,4 +379,19 @@ benchmark g c = do
     end <- r `deepseq` getCPUTime
     return (end - start)
 
-fib = scanl1 (+) $ 0:1:fib
+-- fib = scanl1 (+) $ 0:1:fib
+
+-- class Distributable a where
+--     add, mul :: a -> a -> a
+
+--     -- aux_f c a b = add (SAT.distr a c) (SAT.distr b c)
+--     -- aux_s c a b = add (SAT.distr c a) (SAT.distr c b)
+
+--     distr :: a -> a -> a
+--     distr m c = match m $ (add var var) ->> (aux_f c)
+--         where
+--             aux_f c a b :: Fun '[a] -> a
+--             aux_f c a b = add (SAT.distr a c) (SAT.distr b c)
+--     distr c m = match m $ (add var var) ->> (aux_s c)
+--         where aux_s c a b = add (SAT.distr c a) (SAT.distr c b)
+--     distr a b = mul a b
