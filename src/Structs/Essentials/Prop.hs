@@ -25,8 +25,8 @@ data Prop a
     | (Prop a) :|: (Prop a) -- ^ Logical discjuntion operator (':|:')
     | (Prop a) :>: (Prop a) -- ^ Logical implecation operator. Representing "if p ':>:' q" without "if"
     | (Prop a) :=: (Prop a) -- ^ Logical equivalence operator (':=:')
-    | Negation (Prop a) -- ^ Logical negation unary operator ('Negation')
-    | Statement a -- ^ Terminal 'Statement' of a logical expression
+    | Neg (Prop a) -- ^ Logical negation unary operator ('Neg')
+    | Stmnt a -- ^ Terminal 'Stmnt' of a logical expression
     deriving (Eq,Ord)
 
 -- Just pretty printing the propositions
@@ -38,7 +38,7 @@ instance Show a => Show (Prop a) where
             go (lhs :>: rhs) pre = shouldParent pre 1 $ (go lhs 1) ++ " → " ++ (go rhs 1)
             go (lhs :|: rhs) pre = shouldParent pre 2 $ (go lhs 2) ++ " ∨ " ++ (go rhs 2)
             go (lhs :&: rhs) pre = shouldParent pre 3 $ (go lhs 3) ++ " ∧ " ++ (go rhs 3)
-            go (Negation  p) pre = "¬" ++ (go p 4)
-            go (Statement p) pre = show p
+            go (Neg  p) pre = "¬" ++ (go p 4)
+            go (Stmnt p) pre = show p
 
             shouldParent a b s = if a >= b then "(" ++ s ++ ")" else s
