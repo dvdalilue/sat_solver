@@ -13,25 +13,46 @@
 --
 ---------------------------------------------------------------
 
-module Structs.CNF(cnf) where
+module Structs.CNF(cnf,flatCNF) where
 
-import Structs.Essentials.Prop
 import Structs.NNF
+import Structs.Essentials.Prop
 
--- | Applies distribution property (or over and)
-distr :: Prop a -- ^ Left disjunction operand 
-      -> Prop a -- ^ Right disjunction operand
-      -> Prop a -- ^ Recursive distributed proposition
+import Control.Applicative(pure)
+
+-- | Applies recursively the distribution property (or over and) in a given
+-- proposition. It's assumed that the first argument is the left operand of a
+-- disjunction and the second argument is the right operand.
+
+distr :: Prop a -> Prop a -> Prop a
 distr (a :&: b) q = (distr a q) :&: (distr b q)
 distr p (a :&: b) = (distr p a) :&: (distr p b)
 distr p q = p :|: q
 
--- | Transform a proposition into conjunctive normal form (CNF).
-cnf :: Prop a -- ^ Input 'Prop' in any form
-    -> Prop a -- ^ Output 'Prop' in conjunctive normal form
+-- | Auxiliary function which change a given proposition into its conjunctive
+-- normal form (CNF). The function assumes that the proposition is in NNF. 
+
+cnf_aux :: Prop a -> Prop a
+cnf_aux (p :&: q) = (cnf_aux p) :&: (cnf_aux q)
+cnf_aux (p :|: q) = distr (cnf_aux p) (cnf_aux q)
+cnf_aux p = p
+
+-- | Takes a proposition of type 'Prop' and it's transformed into its
+-- CNF. Prior to that, the 'nnf' function is used in order to have the
+-- proposition in NNF. This step is necessary.
+
+cnf :: Prop a -> Prop a
 cnf = cnf_aux . nnf
--- The proposition has to be in NNF prior the transformation
-    where
-        cnf_aux (p :&: q) = (cnf_aux p) :&: (cnf_aux q)
-        cnf_aux (p :|: q) = distr (cnf_aux p) (cnf_aux q)
-        cnf_aux p = p
+
+-- | Auxiliary function that takes a proposition in CNF return a list of
+-- propositions. Using the first argument as accumulator and the second one as a
+-- stack, assuming that the initial proposition is the first element in it.
+
+flat_aux :: [Prop a] -> [Prop a] -> [Prop a]
+flat_aux acc                [] = acc
+flat_aux acc ((p :&: q):stack) = flat_aux acc (p:q:stack)
+flat_aux acc         (p:stack) = flat_aux (p:acc) stack
+
+-- | Flat a proposition into a list of the components in its CNF.
+flatCNF :: Prop a -> [Prop a]
+flatCNF = flat_aux [] . pure . cnf
