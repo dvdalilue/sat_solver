@@ -13,7 +13,7 @@
 --
 ---------------------------------------------------------------
 
-module Structs.NNF(nnf,nnf_prps) where
+module Structs.NNF(nnf,nnf_stms) where
 
 import Structs.Essentials.Prop
 import Structs.Essentials.Helper
@@ -41,19 +41,19 @@ impl_free   (p :>: q) = (Neg (impl_free p)) :|: (impl_free q)
 -- Returning a 2-tuple with the first element of type [a] and the second
 -- one being the proposition without implications.
 
-impl_f_prps :: Eq a => Prop a -> [a] -> ([a], Prop a)
-impl_f_prps x@(Stmnt s) acc = (s `politeCons` acc, x)
-impl_f_prps   (p :=: q) acc = impl_f_prps ((p :>: q) :&: (q :>: p)) acc
-impl_f_prps     (Neg p) acc = let (acp, ifp) = impl_f_prps p acc
+impl_f_stms :: Eq a => Prop a -> [a] -> ([a], Prop a)
+impl_f_stms x@(Stmnt s) acc = (s `politeCons` acc, x)
+impl_f_stms   (p :=: q) acc = impl_f_stms ((p :>: q) :&: (q :>: p)) acc
+impl_f_stms     (Neg p) acc = let (acp, ifp) = impl_f_stms p acc
                                 in (acp, Neg ifp)
-impl_f_prps   (p :&: q) acc = let (acp, ifp) = impl_f_prps p acc
-                                  (acq, ifq) = impl_f_prps q acp
+impl_f_stms   (p :&: q) acc = let (acp, ifp) = impl_f_stms p acc
+                                  (acq, ifq) = impl_f_stms q acp
                                     in (acq, ifp :&: ifq)
-impl_f_prps   (p :|: q) acc = let (acp, ifp) = impl_f_prps p acc
-                                  (acq, ifq) = impl_f_prps q acp
+impl_f_stms   (p :|: q) acc = let (acp, ifp) = impl_f_stms p acc
+                                  (acq, ifq) = impl_f_stms q acp
                                     in (acq, ifp :|: ifq)
-impl_f_prps   (p :>: q) acc = let (acp, ifp) = impl_f_prps p acc
-                                  (acq, ifq) = impl_f_prps q acp
+impl_f_stms   (p :>: q) acc = let (acp, ifp) = impl_f_stms p acc
+                                  (acq, ifq) = impl_f_stms q acp
                                     in (acq, (Neg ifp) :|: ifq)
 
 -- | Takes a proposition of type 'Prop' and it's transformed into its negative
@@ -66,8 +66,8 @@ nnf = nnf_aux . impl_free
 -- | A variation of 'nnf' which returns a 2-tuple with the first element of type
 -- [a] and the second one being the proposition in NNF.
 
-nnf_prps :: Eq a => Prop a -> ([a], Prop a)
-nnf_prps p = let (as, ifp) = impl_f_prps p [] in (as, nnf_aux ifp)
+nnf_stms :: Eq a => Prop a -> ([a], Prop a)
+nnf_stms p = let (as, ifp) = impl_f_stms p [] in (as, nnf_aux ifp)
 
 -- | Auxiliary function that assumed the imput proposition is without
 -- implication and change it into its NNF.
