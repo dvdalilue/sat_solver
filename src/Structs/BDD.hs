@@ -26,9 +26,10 @@ module Structs.BDD(
     fromProp,
 ) where
 
-import Data.Tree -- To print BDD
 import Structs.Essentials.Prop
-import qualified Data.Map.Strict as Map -- Maybe deprecated
+import Structs.Essentials.Helper
+
+import Data.Tree -- To print BDD
 import Prelude hiding (and,or)
 
 -- | Recursive data type of a binary decision diagram. Storing
@@ -58,15 +59,6 @@ instance Show a => Show (BDD a) where
 --         space ++ show v ++ space ++ "\n" ++
 --         (fst (split space)) ++ "/" ++ i ++ "\\" ++ (snd (split space)) ++
 --         (printBDD y (d-1) (i++"  ")) ++ i ++ (printBDD n (d-1) (i++"  ")) ++ "\n"
-
--- split :: [a] -> ([a],[a])
--- split [] = ([],[])
--- split [x] = ([x],[])
--- split (x:y:zs) =
---     let
---         (xs,ys) = split zs
---     in
---         ((x:xs),(y:ys))
 
 -- | Apply negation operation to a BDD
 neg :: BDD a -> BDD a
@@ -138,63 +130,3 @@ fromProp   (p :>: q) = implies (fromProp p) (fromProp q)
 fromProp   (p :=: q) = eq      (fromProp p) (fromProp q)
 fromProp  (Neg  p  ) = neg     (fromProp p)
 fromProp x@(Stmnt _) = Decision x Yes No
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
-{-
-    The next functions are code in evaluation or old ideas. Nor exported
--}
-
-mapLeaves :: BDD a -> (BDD a -> BDD a) -> BDD a
-mapLeaves (Decision var y n) f = Decision var (mapLeaves y f) (mapLeaves n f)
-mapLeaves x f = f x
--- mapLeaves No f = f No
-
-propToBDD' :: Ord a => Prop a -> BDD a
-propToBDD' (p :&: q) =
-    let
-        bdd_p = propToBDD' p
-        bdd_q = propToBDD' q
-    in 
-        mapLeaves bdd_p $ and bdd_q
-propToBDD' (p :|: q) =
-    let
-        bdd_p = propToBDD' p
-        bdd_q = propToBDD' q
-    in 
-        mapLeaves bdd_p $ or bdd_q
-propToBDD' (p :>: q) =
-    let
-        bdd_p = propToBDD' p
-        bdd_q = propToBDD' q
-    in 
-        mapLeaves bdd_p $ (flip implies) bdd_q
-propToBDD' (p :=: q) =
-    let
-        bdd_p = propToBDD' p
-        bdd_q = propToBDD' q
-    in
-        mapLeaves bdd_p $ eq bdd_q
-propToBDD' (Neg p)  =
-    let
-        bdd = propToBDD' p
-    in
-        neg bdd
-propToBDD' x@(Stmnt _) = Decision x Yes No
-
-robdd :: BDD a -> BDD a
-robdd bdd = robdd_aux bdd Map.empty
-    where
-        robdd_aux :: BDD a -> Map.Map a Bool -> BDD a
-        robdd_aux (Decision (Stmnt p) y n) map =
-            let
-                val = Map.lookup p map
-            in
-                case val of Nothing ->
-                                Decision (Stmnt p)
-                                    (robdd_aux y (Map.insert p True map))
-                                    (robdd_aux n (Map.insert p False map))
-                            (Just True) -> robdd_aux y map
-                            (Just False) -> robdd_aux n map
-        robdd_aux d map = d
