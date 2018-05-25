@@ -15,3 +15,12 @@ politeCons x xs
 revConcat :: [a] -> [a] -> [a]
 revConcat     [] ys = ys
 revConcat (x:xs) ys = revConcat xs (x:ys)
+
+split :: [a] -> ([a],[a])
+split [] = ([],[])
+split [x] = ([x],[])
+split (x:y:zs) =
+    let
+        (xs,ys) = split zs
+    in
+        ((x:xs),(y:ys))
