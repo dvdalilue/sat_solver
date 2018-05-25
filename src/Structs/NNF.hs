@@ -74,8 +74,8 @@ nnf_prps p = let (as, ifp) = impl_f_prps p [] in (as, nnf_aux ifp)
 
 nnf_aux :: Prop a -> Prop a
 nnf_aux (Negation (Negation p)) = nnf_aux p
-nnf_aux (p :&: q) = (nnf_aux p) :&: (nnf_aux q)
-nnf_aux (p :|: q) = (nnf_aux p) :|: (nnf_aux q)
 nnf_aux (Negation (p :&: q)) = (nnf_aux (Negation p)) :|: (nnf_aux (Negation q))
 nnf_aux (Negation (p :|: q)) = (nnf_aux (Negation p)) :&: (nnf_aux (Negation q))
+nnf_aux (p :&: q) = (nnf_aux p) :&: (nnf_aux q)
+nnf_aux (p :|: q) = (nnf_aux p) :|: (nnf_aux q)
 nnf_aux p = p
