@@ -13,7 +13,7 @@
 --
 ---------------------------------------------------------------
 
-module Structs.CNF(cnf,flatCNF) where
+module Structs.CNF(cnf,flatCNF,flatCNFStms) where
 
 import Structs.NNF
 import Structs.Essentials.Prop
@@ -53,6 +53,14 @@ flat_aux acc                [] = acc
 flat_aux acc ((p :&: q):stack) = flat_aux acc (p:q:stack)
 flat_aux acc         (p:stack) = flat_aux (p:acc) stack
 
--- | Flat a proposition into a list of the components in its CNF.
+-- | Flat a proposition into a list of the components of its CNF.
 flatCNF :: Prop a -> [Prop a]
 flatCNF = flat_aux [] . pure . cnf
+
+-- | Similar to the previous function but returns a 2-tuple with the first
+-- element as a list of the statements and the second one being a list of the
+-- components of its CNF.
+
+flatCNFStms :: Eq a => Prop a -> ([a], [Prop a])
+flatCNFStms p = let (as, ifp) = nnf_stms p in (as, inner_flat ifp)
+    where inner_flat = flat_aux [] . pure . cnf_aux
