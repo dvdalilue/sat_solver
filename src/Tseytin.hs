@@ -14,23 +14,23 @@ getRanCharOut chs@(ch:_) = foo ch chs $ mkStdGen 23
 
 bla bar (x:xs) p q acc vs = if x `elem` acc then bar (p:q:xs) acc vs else bar (p:q:xs) (x:acc) vs
 
-bar [                      ] acc vs = (acc,vs)
-bar l@(x@(p :&: q):xs) acc vs       = bla bar l p q acc vs
-bar l@(x@(p :|: q):xs) acc vs       = bla bar l p q acc vs
-bar l@(x@(p :>: q):xs) acc vs       = bla bar l p q acc vs
-bar l@(x@(p :=: q):xs) acc vs       = bla bar l p q acc vs
-bar l@(x@(Negation  p  ):xs) acc vs = if x `elem` acc then bar (p:xs) acc vs else bar (p:xs) (x:acc) vs
-bar   (x@(Statement v  ):xs) acc vs = bar (xs) acc vars -- if x `elem` acc then bar (xs)     acc else bar (xs)     (x:acc)
+bar                  [] acc vs = (acc,vs)
+bar  l@(x@(p :&: q):xs) acc vs = bla bar l p q acc vs
+bar  l@(x@(p :|: q):xs) acc vs = bla bar l p q acc vs
+bar  l@(x@(p :>: q):xs) acc vs = bla bar l p q acc vs
+bar  l@(x@(p :=: q):xs) acc vs = bla bar l p q acc vs
+bar l@(x@(Neg  p  ):xs) acc vs = if x `elem` acc then bar (p:xs) acc vs else bar (p:xs) (x:acc) vs
+bar  (x@(Stmnt v  ):xs) acc vs = bar (xs) acc vars -- if x `elem` acc then bar (xs)     acc else bar (xs)     (x:acc)
     where
         vars = if v `elem` vs then vs else (v:vs)
 
 textSust :: Eq a => Prop a -> Prop a -> Prop a
-textSust a@(p :&: q) s@(x :=: y) = if a == y then x else ((textSust p s) :&: (textSust q s))
-textSust a@(p :|: q) s@(x :=: y) = if a == y then x else ((textSust p s) :|: (textSust q s))
-textSust a@(p :>: q) s@(x :=: y) = if a == y then x else ((textSust p s) :>: (textSust q s))
-textSust a@(p :=: q) s@(x :=: y) = if a == y then x else ((textSust p s) :=: (textSust q s))
-textSust a@(Negation  p  ) s@(x :=: y) = if a == y then x else (Negation  (textSust p s))
-textSust a@(Statement v  ) s@(x :=: y) = if a == y then x else a
+textSust   a@(p :&: q) s@(x :=: y) = if a == y then x else ((textSust p s) :&: (textSust q s))
+textSust   a@(p :|: q) s@(x :=: y) = if a == y then x else ((textSust p s) :|: (textSust q s))
+textSust   a@(p :>: q) s@(x :=: y) = if a == y then x else ((textSust p s) :>: (textSust q s))
+textSust   a@(p :=: q) s@(x :=: y) = if a == y then x else ((textSust p s) :=: (textSust q s))
+textSust  a@(Neg  p  ) s@(x :=: y) = if a == y then x else (Neg  (textSust p s))
+textSust a@(Stmnt v  ) s@(x :=: y) = if a == y then x else a
 
 -- baz :: ([Prop Char],[Char]) -> [Prop Char]
 baz (ps,vs) = pop ps vs [] -- map doe ps
@@ -39,7 +39,7 @@ baz (ps,vs) = pop ps vs [] -- map doe ps
         pop (x:xs) vs acc =
             let
                 c = getRanCharOut vs
-                p = (Statement c) :=: x
+                p = (Stmnt c) :=: x
             in
                 pop xs (c:vs) (p:acc)
 

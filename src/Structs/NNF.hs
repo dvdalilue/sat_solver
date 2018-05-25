@@ -22,17 +22,17 @@ import Structs.Essentials.Helper
 -- to the leaf statements, change the implication data constructors following
 -- the next theorem.
 -- 
--- > (p :>: q) == (Negation p) :|: q.
+-- > (p :>: q) == (Neg p) :|: q.
 --
 -- Returning the equivalent proposition without implications.
 
 impl_free :: Prop a -> Prop a
-impl_free x@(Statement _) = x
-impl_free   (Negation  p) = Negation (impl_free p)
-impl_free       (p :&: q) = (impl_free p) :&: (impl_free q)
-impl_free       (p :|: q) = (impl_free p) :|: (impl_free q)
-impl_free       (p :=: q) = impl_free $ (p :>: q) :&: (q :>: p)
-impl_free       (p :>: q) = (Negation (impl_free p)) :|: (impl_free q)
+impl_free x@(Stmnt _) = x
+impl_free    (Neg  p) = Neg (impl_free p)
+impl_free   (p :&: q) = (impl_free p) :&: (impl_free q)
+impl_free   (p :|: q) = (impl_free p) :|: (impl_free q)
+impl_free   (p :=: q) = impl_free $ (p :>: q) :&: (q :>: p)
+impl_free   (p :>: q) = (Neg (impl_free p)) :|: (impl_free q)
 
 -- | A variation of 'impl_free' which in this case takes a proposition, a
 -- polymorphic list (accumulator), goes recursively to the leaf statements and
@@ -42,19 +42,19 @@ impl_free       (p :>: q) = (Negation (impl_free p)) :|: (impl_free q)
 -- one being the proposition without implications.
 
 impl_f_prps :: Eq a => Prop a -> [a] -> ([a], Prop a)
-impl_f_prps x@(Statement s) acc = (s `politeCons` acc, x)
-impl_f_prps       (p :=: q) acc = impl_f_prps ((p :>: q) :&: (q :>: p)) acc
-impl_f_prps    (Negation p) acc = let (acp, ifp) = impl_f_prps p acc
-                                    in (acp, Negation ifp)
-impl_f_prps       (p :&: q) acc = let (acp, ifp) = impl_f_prps p acc
-                                      (acq, ifq) = impl_f_prps q acp
-                                        in (acq, ifp :&: ifq)
-impl_f_prps       (p :|: q) acc = let (acp, ifp) = impl_f_prps p acc
-                                      (acq, ifq) = impl_f_prps q acp
-                                        in (acq, ifp :|: ifq)
-impl_f_prps       (p :>: q) acc = let (acp, ifp) = impl_f_prps p acc
-                                      (acq, ifq) = impl_f_prps q acp
-                                        in (acq, (Negation ifp) :|: ifq)
+impl_f_prps x@(Stmnt s) acc = (s `politeCons` acc, x)
+impl_f_prps   (p :=: q) acc = impl_f_prps ((p :>: q) :&: (q :>: p)) acc
+impl_f_prps     (Neg p) acc = let (acp, ifp) = impl_f_prps p acc
+                                in (acp, Neg ifp)
+impl_f_prps   (p :&: q) acc = let (acp, ifp) = impl_f_prps p acc
+                                  (acq, ifq) = impl_f_prps q acp
+                                    in (acq, ifp :&: ifq)
+impl_f_prps   (p :|: q) acc = let (acp, ifp) = impl_f_prps p acc
+                                  (acq, ifq) = impl_f_prps q acp
+                                    in (acq, ifp :|: ifq)
+impl_f_prps   (p :>: q) acc = let (acp, ifp) = impl_f_prps p acc
+                                  (acq, ifq) = impl_f_prps q acp
+                                    in (acq, (Neg ifp) :|: ifq)
 
 -- | Takes a proposition of type 'Prop' and it's transformed into its negative
 -- normal form (NNF). First of all, the implications are removed of the
@@ -73,9 +73,9 @@ nnf_prps p = let (as, ifp) = impl_f_prps p [] in (as, nnf_aux ifp)
 -- implication and change it into its NNF.
 
 nnf_aux :: Prop a -> Prop a
-nnf_aux (Negation (Negation p)) = nnf_aux p
-nnf_aux (Negation (p :&: q)) = (nnf_aux (Negation p)) :|: (nnf_aux (Negation q))
-nnf_aux (Negation (p :|: q)) = (nnf_aux (Negation p)) :&: (nnf_aux (Negation q))
-nnf_aux (p :&: q) = (nnf_aux p) :&: (nnf_aux q)
-nnf_aux (p :|: q) = (nnf_aux p) :|: (nnf_aux q)
-nnf_aux p = p
+nnf_aux   (Neg (Neg p)) = nnf_aux p
+nnf_aux (Neg (p :&: q)) = (nnf_aux (Neg p)) :|: (nnf_aux (Neg q))
+nnf_aux (Neg (p :|: q)) = (nnf_aux (Neg p)) :&: (nnf_aux (Neg q))
+nnf_aux       (p :&: q) = (nnf_aux p) :&: (nnf_aux q)
+nnf_aux       (p :|: q) = (nnf_aux p) :|: (nnf_aux q)
+nnf_aux               p = p

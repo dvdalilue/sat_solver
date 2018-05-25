@@ -132,12 +132,12 @@ implies bdd1 bdd2 = or (neg bdd1) bdd2
 
 -- | Transform a proposition into a BDD.
 fromProp :: Ord a => Prop a -> BDD a
-fromProp (p :&: q)       = and     (fromProp p) (fromProp q)
-fromProp (p :|: q)       = or      (fromProp p) (fromProp q)
-fromProp (p :>: q)       = implies (fromProp p) (fromProp q)
-fromProp (p :=: q)       = eq      (fromProp p) (fromProp q)
-fromProp (Negation  p  ) = neg     (fromProp p)
-fromProp x@(Statement _) = Decision x Yes No
+fromProp   (p :&: q) = and     (fromProp p) (fromProp q)
+fromProp   (p :|: q) = or      (fromProp p) (fromProp q)
+fromProp   (p :>: q) = implies (fromProp p) (fromProp q)
+fromProp   (p :=: q) = eq      (fromProp p) (fromProp q)
+fromProp  (Neg  p  ) = neg     (fromProp p)
+fromProp x@(Stmnt _) = Decision x Yes No
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -176,24 +176,25 @@ propToBDD' (p :=: q) =
         bdd_q = propToBDD' q
     in
         mapLeaves bdd_p $ eq bdd_q
-propToBDD' (Negation p)  =
+propToBDD' (Neg p)  =
     let
         bdd = propToBDD' p
     in
         neg bdd
-propToBDD' x@(Statement _) = Decision x Yes No
+propToBDD' x@(Stmnt _) = Decision x Yes No
 
 robdd :: BDD a -> BDD a
 robdd bdd = robdd_aux bdd Map.empty
     where
         robdd_aux :: BDD a -> Map.Map a Bool -> BDD a
-        robdd_aux (Decision (Statement p) y n) map =
+        robdd_aux (Decision (Stmnt p) y n) map =
             let
                 val = Map.lookup p map
             in
                 case val of Nothing ->
-                                Decision (Statement p) (robdd_aux y (Map.insert p True map))
-                                                       (robdd_aux n (Map.insert p False map))
+                                Decision (Stmnt p)
+                                    (robdd_aux y (Map.insert p True map))
+                                    (robdd_aux n (Map.insert p False map))
                             (Just True) -> robdd_aux y map
                             (Just False) -> robdd_aux n map
         robdd_aux d map = d

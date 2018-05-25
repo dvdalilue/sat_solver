@@ -10,10 +10,11 @@ module Structs.ANF where
 -- where
 
 import Structs.Essentials.Prop
+import Structs.Essentials.Helper
 
 import Data.List
-import Control.Applicative
 import Control.DeepSeq
+import Control.Applicative
 
 data ANF a = AND (ANF a) (ANF a)
            | XOR (ANF a) (ANF a)
@@ -118,9 +119,9 @@ sExOr' (p :>: q) =
         opds = sort [One, exOrP, reduce (distr exOrP exOrQ)]
     in
         foldr1 XOR opds
-sExOr' (p :=: q)     = sExOr' $ (p :>: q) :&: (q :>: p)
-sExOr' (Negation  p) = XOR One $ reduce (sExOr' p)
-sExOr' (Statement p) = Variable p
+sExOr' (p :=: q) = sExOr' $ (p :>: q) :&: (q :>: p)
+sExOr'  (Neg  p) = XOR One $ reduce (sExOr' p)
+sExOr' (Stmnt p) = Variable p
 
 sExOr :: Eq a => Prop a -> ANF a
 sExOr (p :&: q) = distr (sExOr p) (sExOr q)
@@ -134,24 +135,14 @@ sExOr (p :>: q) =
         exOrQ = (sExOr q)
     in
         XOR One $ XOR exOrP $ distr exOrP exOrQ
-sExOr (p :=: q)     = sExOr $ (p :>: q) :&: (q :>: p)
-sExOr (Negation  p) = XOR One (sExOr p)
-sExOr (Statement p) = Variable p
+sExOr (p :=: q) = sExOr $ (p :>: q) :&: (q :>: p)
+sExOr  (Neg  p) = XOR One (sExOr p)
+sExOr (Stmnt p) = Variable p
 
 distr :: ANF a -> ANF a -> ANF a
 distr p (XOR q r) = XOR (distr p q) (distr p r)
 distr (XOR p q) r = XOR (distr p r) (distr q r)
 distr p q = AND p q
-
-enviousCons :: Eq a => a -> [a] -> [a]
-enviousCons x xs
-    | x `elem` xs = delete x xs
-    | otherwise   = x:xs
-
-politeCons :: Eq a => a -> [a] -> [a]
-politeCons x xs
-    | x `elem` xs = xs
-    | otherwise   = x:xs
 
 -- It is assumed that the first parameter is an empty list and
 -- the second one is the boolean formula without any remaining
