@@ -24,3 +24,6 @@ split (x:y:zs) =
         (xs,ys) = split zs
     in
         ((x:xs),(y:ys))
+
+sortDesc :: Ord a  => [a] -> [a]
+sortDesc = sortBy (flip compare)
