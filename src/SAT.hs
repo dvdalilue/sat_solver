@@ -9,7 +9,7 @@ import Structs.BDD
 import Structs.ANF
 import Tseytin
 
-import Structs.DPLL.CNF
+import DPLL.CNF
 
 import Data.List
 -- import Data.Pattern
