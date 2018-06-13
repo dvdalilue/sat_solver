@@ -12,12 +12,9 @@
 
 Proposition* impl_free(Proposition *p) {
     Proposition *actual = p;
-    Proposition *result = NULL;
+    Proposition *result = p;
 
     switch (actual->kind) {
-        case 0:
-            result = p;
-            break;
         case 1:
             result = new_neg(impl_free(unneg(actual)));
             free_neg(actual);
@@ -50,17 +47,45 @@ Proposition* impl_free(Proposition *p) {
 
 Proposition *nnf(Proposition *p) {
     Proposition *actual = p;
+    Proposition *result = p;
     
     switch (actual->kind) {
         case 1:
+            switch (unneg(actual)->kind) {
+                case 1:
+                    result = nnf(unneg(unneg(actual)));
+                    free_neg(unneg(actual));
+                    free_neg(actual);
+                    break;
+                case 2:
+                    switch (op(unneg(actual))) {
+                        case AND:
+                            result = new_bin(OR, nnf(new_neg(lhs(unneg(actual)))), nnf(new_neg(rhs(unneg(actual)))));
+                            break;
+                        case OR:
+                            result = new_bin(AND, nnf(new_neg(lhs(unneg(actual)))), nnf(new_neg(rhs(unneg(actual)))));
+                            break;
+                        default:
+                            result = new_bin(op(unneg(actual)), nnf(lhs(unneg(actual))), nnf(rhs(unneg(actual))));
+                            break;
+                    }
+                    free_bin(unneg(actual));
+                    free_neg(actual);
+                    break;
+            }
             break;
         case 2:
+            result = new_bin(op(actual),
+                             nnf(lhs(actual)),
+                             nnf(rhs(actual)));
+            free_bin(actual);
             break;
     }
-    return p;
+    return result;
 }
 
 int main (int argc, const char * argv[]) {
+    Proposition *tmp = NULL;
     Proposition *modus_ponen = new_bin(IMPLIE,
                                        new_bin(AND,
                                            new_bin(IMPLIE,
@@ -69,7 +94,8 @@ int main (int argc, const char * argv[]) {
                                            STM('P')),
                                        STM('Q'));
 
-    modus_ponen = impl_free(modus_ponen);
+    tmp = impl_free(modus_ponen);
+    modus_ponen = nnf(tmp);
     prop_to_s(modus_ponen);
     fprintf(stdout, "\n");
     destroy_prop(modus_ponen);
