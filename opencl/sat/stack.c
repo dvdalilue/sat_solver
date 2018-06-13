@@ -46,7 +46,7 @@ void* top (Stack *s) {
     return val;
 }
 
-void destroy(Stack **s) {
+void destroy_stack(Stack **s) {
     Elem *aux = (*s)->top;
     Elem *tmp = NULL;
     

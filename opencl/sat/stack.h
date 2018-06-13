@@ -21,6 +21,6 @@ void stack_new (Stack **s);
 int is_empty (Stack *s);
 void push (Stack *s, void *v);
 void* top (Stack *s);
-void destroy(Stack **s);
+void destroy_stack(Stack **s);
 
 #endif /* stack */
