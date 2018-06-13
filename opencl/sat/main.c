@@ -10,7 +10,7 @@
 #include "stack.h"
 #include "proposition.h"
 
-Proposition* impl_free(Proposition *p) {
+Proposition* impl_free (Proposition *p) {
     Proposition *actual = p;
     Proposition *result = p;
 
@@ -45,9 +45,9 @@ Proposition* impl_free(Proposition *p) {
     return result;
 }
 
-Proposition *nnf(Proposition *p) {
-    Proposition *actual = p;
-    Proposition *result = p;
+Proposition *nnf (Proposition *p) {
+    Proposition *actual = impl_free(p);
+    Proposition *result = actual;
     
     switch (actual->kind) {
         case 1:
@@ -84,8 +84,38 @@ Proposition *nnf(Proposition *p) {
     return result;
 }
 
+Proposition* distr (Proposition *p, Proposition *q) {
+    Proposition *result = NULL;
+    
+    if (p->kind == 2 && op(p) == AND) {
+        result = new_bin(AND, distr(lhs(p), q), distr(rhs(p), q));
+        free_bin(p);
+    } else if (q->kind == 2 && op(p) == AND) {
+        result = new_bin(AND, distr(p, lhs(q)), distr(p, rhs(q)));
+        free_bin(q);
+    } else {
+        result = new_bin(OR, p, q);
+    }
+    return result;
+}
+
+Proposition* cnf (Proposition *p) {
+    Proposition *result;
+    p = nnf(p);
+    result = p;
+    if (p->kind == 2) {
+        if (op(p) == AND) {
+            result = new_bin(AND, cnf(lhs(p)), cnf(rhs(p)));
+            // TODO: free memory
+        } else {
+            result = distr(cnf(lhs(p)), cnf(rhs(p)));
+        }
+    }
+    return result;
+}
+
 int main (int argc, const char * argv[]) {
-    Proposition *tmp = NULL;
+//    Proposition *tmp = NULL;
     Proposition *modus_ponen = new_bin(IMPLIE,
                                        new_bin(AND,
                                            new_bin(IMPLIE,
@@ -94,8 +124,7 @@ int main (int argc, const char * argv[]) {
                                            STM('P')),
                                        STM('Q'));
 
-    tmp = impl_free(modus_ponen);
-    modus_ponen = nnf(tmp);
+    modus_ponen = cnf(modus_ponen);
     prop_to_s(modus_ponen);
     fprintf(stdout, "\n");
     destroy_prop(modus_ponen);
