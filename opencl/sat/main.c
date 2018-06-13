@@ -7,6 +7,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "stack.h"
+
+#define op(p) p->prop->binary->op
+#define lhs(p) p->prop->binary->lhs
+#define rhs(p) p->prop->binary->rhs
+#define unneg(n) n->prop->neg->p
 
 typedef enum {AND, OR, IMPLIE, EQ} Operation;
 
@@ -88,7 +94,7 @@ Proposition* stm(void *v) {
     return p;
 }
 
-Proposition * neg(Proposition *p) {
+Proposition* neg(Proposition *p) {
     Proposition *r = (Proposition *) malloc(sizeof(Proposition));
     PropData *d = (PropData *) malloc(sizeof(PropData));
     Negation *n = (Negation *) malloc(sizeof(Negation));
@@ -126,24 +132,48 @@ Proposition* impl_free(Proposition *p) {
             return p;
             break;
         case 1:
-            return neg(impl_free(actual->prop->neg->p));
+            return neg(impl_free(unneg(actual)));
             break;
         case 2:
-            if (actual->prop->binary->op == IMPLIE) {
-                return bin(OR, neg(impl_free(actual->prop->binary->lhs)), impl_free(actual->prop->binary->rhs));
-            } else if (actual->prop->binary->op == EQ) {
+            if (op(actual) == IMPLIE) {
+                return bin(OR,
+                           neg(impl_free(lhs(actual))),
+                                impl_free(rhs(actual))
+                        );
+            } else if (op(actual) == EQ) {
                 return bin(AND,
-                           bin(OR, neg(impl_free(actual->prop->binary->lhs)), impl_free(actual->prop->binary->rhs)),
-                           bin(OR, neg(impl_free(actual->prop->binary->rhs)), impl_free(actual->prop->binary->lhs)));
+                           bin(OR,
+                                neg(impl_free(lhs(actual))),
+                                     impl_free(rhs(actual))),
+                           bin(OR,
+                                neg(impl_free(rhs(actual))),
+                                    impl_free(lhs(actual)))
+                           );
             } else {
-                return bin(actual->prop->binary->op,
-                           impl_free(actual->prop->binary->lhs),
-                           impl_free(actual->prop->binary->rhs));
+                return bin(op(actual),
+                           impl_free(lhs(actual)),
+                           impl_free(rhs(actual)));
             }
             break;
     }
     return p;
 }
+
+Proposition *nnf(Proposition *p) {
+    Proposition *actual = p;
+    
+    switch (actual->kind) {
+        case 1:
+            break;
+        case 2:
+            break;
+    }
+    return p;
+}
+
+//void destroy(Proposition *p) {
+//
+//}
 
 int main (int argc, const char * argv[]) {
     Proposition *p = stm((void *) 'P');
