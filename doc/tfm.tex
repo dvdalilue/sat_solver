@@ -1,0 +1,107 @@
+\documentclass[12pt,letterpaper,titlepage,oneside,openright]{book}
+
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage[svgnames]{xcolor}
+\usepackage[T1]{fontenc}
+% \usepackage[titletoc]{appendix}
+\usepackage{amsmath,amsfonts,amsthm}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{pdfpages}
+\usepackage{lettrine}
+\usepackage{listings}
+\usepackage{titlesec}
+\usepackage{epigraph}
+\usepackage{lipsum}
+% \usepackage{setspace}
+% \usepackage{multirow}
+% \usepackage{fancyhdr}
+% \usepackage{relsize}
+\usepackage{xspace}
+\usepackage{cite}
+
+\makeatletter
+\renewcommand{\@chapapp}{}% Not necessary...
+\newenvironment{chapquote}[2][2em]
+  {\setlength{\@tempdima}{#1}%
+   \def\chapquote@author{#2}%
+   \parshape 1 \@tempdima \dimexpr\textwidth-2\@tempdima\relax%
+   \itshape}
+  {\par\normalfont\hfill--\ \chapquote@author\hspace*{\@tempdima}\par\bigskip}
+\makeatother
+
+\begin{document}
+
+\frontmatter
+
+\begin{titlepage}
+    \begin{center}
+        \includegraphics[width=0.15\textwidth]{logo.png}\\
+        {\large UNIVERSIDAD POLITÉCNICA DE MADRID}\\
+        ESCUELA TÉCNICA SUPERIOR DE INGENIEROS INFORMÁTICOS\\
+        DEPARTAMENTO DE LENGUAJES Y SISTEMAS INFORMÁTICOS E INGENIERÍA DE SOFTWARE
+
+        \vspace{6em}
+
+        \textbf{TITULO QUE TAL QUE PIN QUE PAO}
+
+        \vspace{6em}
+
+        Por:\\
+        David Alejandro Lilue Borrero\\
+
+        \vspace{6em}
+
+        TRABAJO FINAL DE MASTER\\
+        Presentado ante la ilustre Universidad Politécnica de Madrid\\
+        como requisito para optar al título de Máster en\\
+        Software y Sistemas\\
+        
+        \vfill
+        Madrid, Junio de 2018
+    \end{center}
+\end{titlepage}
+
+\newpage
+
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Dedicatoria}
+\begin{flushright}
+Dedicalo a alguien o algo.
+\end{flushright}
+
+\newpage
+
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Agradecimientos}
+\begin{flushleft}
+Agradezco a un kiwi que vuela en un avión de papel,\\
+deja en su camino una estala con forma de espiral.\\
+Aquella posee una proporción casi divina.
+\end{flushleft}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\mainmatter
+
+\chapter{Introducción}
+
+\begin{chapquote}{Miguel de Cervantes, \textit{Don Quijote de la Mancha}}
+Sola una cosa tiene mala el sueño, según he oído decir, y es que se parece a la muerte, pues de un dormido a un muerto hay muy poca diferencia.
+\end{chapquote}
+
+\lipsum[1-2]
+
+\chapter{Marco teórico}
+
+\lipsum[1-2]
+
+\end{document}

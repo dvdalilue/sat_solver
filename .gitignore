@@ -21,3 +21,7 @@ cabal.project.local~
 .HTF/
 .ghc.environment.*
 opencl/sat_solver.xcodeproj
+doc/tfm.aux
+doc/tfm.toc
+doc/tfm.out
+doc/tfm.log
