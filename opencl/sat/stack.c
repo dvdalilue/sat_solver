@@ -29,6 +29,21 @@ void push (Stack *s, void *n) {
     s->size++;
 }
 
+void push_if_unique (Stack *s, void *v) {
+    Elem *current = s->top;
+
+    while (current != NULL) {
+        if (current->value == v) {
+            break;
+        }
+        current = current->next;
+    }
+
+    if (current == NULL) {
+        push(s, v);
+    }
+}
+
 void* top (Stack *s) {
     if (is_empty(s)) {
         fprintf(stdout, "*** Error: retriving top on empty stack\n");
@@ -46,7 +61,7 @@ void* top (Stack *s) {
     return val;
 }
 
-void destroy_stack(Stack **s) {
+void destroy_stack (Stack **s) {
     Elem *aux = (*s)->top;
     Elem *tmp = NULL;
     
