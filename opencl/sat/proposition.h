@@ -12,7 +12,7 @@
 #define op(p) p->prop->binary->op
 #define lhs(p) p->prop->binary->lhs
 #define rhs(p) p->prop->binary->rhs
-#define unneg(n) n->prop->neg->p
+#define desneg(n) n->prop->neg->p
 #define value(p) p->prop->stm->value
 
 typedef enum {AND, OR, IMPLIE, EQ} Operation;
@@ -38,7 +38,7 @@ typedef union _prop_union {
 } PropData;
 
 typedef struct _prop {
-    int kind;
+    int kind; // 0: Statement, 1: Negation, 2: Binary operation
     union _prop_union *prop;
 } Proposition;
 

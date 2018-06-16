@@ -15,7 +15,7 @@ Proposition* impl_free (Proposition *p) {
 
     switch (actual->kind) {
         case 1:
-            result = new_neg(impl_free(unneg(actual)));
+            result = new_neg(impl_free(desneg(actual)));
             free_neg(actual);
             break;
         case 2:
@@ -50,31 +50,31 @@ Proposition* nnf (Proposition *p) {
     
     switch (actual->kind) {
         case 1:
-            switch (unneg(actual)->kind) {
+            switch (desneg(actual)->kind) {
                 case 1:
-                    result = nnf(unneg(unneg(actual)));
-                    free_neg(unneg(actual));
+                    result = nnf(desneg(desneg(actual)));
+                    free_neg(desneg(actual));
                     free_neg(actual);
                     break;
                 case 2:
-                    switch (op(unneg(actual))) {
+                    switch (op(desneg(actual))) {
                         case AND:
                             result = new_bin(OR,
-                                        nnf(new_neg(lhs(unneg(actual)))),
-                                        nnf(new_neg(rhs(unneg(actual)))));
+                                        nnf(new_neg(lhs(desneg(actual)))),
+                                        nnf(new_neg(rhs(desneg(actual)))));
                             break;
                         case OR:
                             result = new_bin(AND,
-                                        nnf(new_neg(lhs(unneg(actual)))),
-                                        nnf(new_neg(rhs(unneg(actual)))));
+                                        nnf(new_neg(lhs(desneg(actual)))),
+                                        nnf(new_neg(rhs(desneg(actual)))));
                             break;
                         default:
-                            result = new_bin(op(unneg(actual)),
-                                        nnf(lhs(unneg(actual))),
-                                        nnf(rhs(unneg(actual))));
+                            result = new_bin(op(desneg(actual)),
+                                        nnf(lhs(desneg(actual))),
+                                        nnf(rhs(desneg(actual))));
                             break;
                     }
-                    free_bin(unneg(actual));
+                    free_bin(desneg(actual));
                     free_neg(actual);
                     break;
             }

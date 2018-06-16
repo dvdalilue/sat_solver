@@ -99,7 +99,7 @@ void destroy_prop (Proposition *p) {
                 push_if_unique(stm_unique, (void *) aux);
                 break;
             case 1:
-                push(s, (void *) unneg(aux));
+                push(s, (void *) desneg(aux));
                 push_if_unique(stm_unique, (void *) aux);
                 break;
             case 2:
