@@ -19,6 +19,19 @@ int is_empty (Stack *s) {
     return s->size ? 0 : 1;
 }
 
+int member (Stack *s, void *v) {
+    Elem *current = s->top;
+    
+    while (current != NULL) {
+        if (current->value == v) {
+            return 1;
+        }
+        current = current->next;
+    }
+    
+    return 0;
+}
+
 void push (Stack *s, void *n) {
     Elem *aux = (Elem *) malloc (sizeof(Elem));
     
@@ -30,16 +43,7 @@ void push (Stack *s, void *n) {
 }
 
 void push_if_unique (Stack *s, void *v) {
-    Elem *current = s->top;
-
-    while (current != NULL) {
-        if (current->value == v) {
-            break;
-        }
-        current = current->next;
-    }
-
-    if (current == NULL) {
+    if (!member(s, v)) {
         push(s, v);
     }
 }

@@ -19,6 +19,7 @@ typedef struct _stk {
 
 void stack_new (Stack **s);
 int is_empty (Stack *s);
+int member (Stack *s, void *v);
 void push (Stack *s, void *v);
 void push_if_unique (Stack *s, void *v);
 void* top (Stack *s);
