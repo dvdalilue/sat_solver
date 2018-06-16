@@ -106,23 +106,24 @@ Proposition* cnf (Proposition *p) {
     if (p->kind == 2) {
         if (op(p) == AND) {
             result = new_bin(AND, cnf(lhs(p)), cnf(rhs(p)));
-            // TODO: free memory
         } else {
             result = distr(cnf(lhs(p)), cnf(rhs(p)));
         }
+        free_bin(p);
     }
     return result;
 }
 
 int main (int argc, const char * argv[]) {
-//    Proposition *tmp = NULL;
+    Proposition *p = STM('P');
+    Proposition *q = STM('Q');
     Proposition *modus_ponen = new_bin(IMPLIE,
-                                       new_bin(AND,
-                                           new_bin(IMPLIE,
-                                               STM('P'),
-                                               STM('Q')),
-                                           STM('P')),
-                                       STM('Q'));
+                                    new_bin(AND,
+                                        new_bin(IMPLIE,
+                                            p,
+                                            q),
+                                        p),
+                                    q);
 
     modus_ponen = cnf(modus_ponen);
     prop_to_s(modus_ponen);
