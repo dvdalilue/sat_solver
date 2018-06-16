@@ -7,5 +7,5 @@
 
 #include "nnf.h"
 
-Proposition* distr (Proposition *p, Proposition *q);
+Proposition* distr_cnf (Proposition *p, Proposition *q);
 Proposition* cnf (Proposition *p);
