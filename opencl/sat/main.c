@@ -7,7 +7,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "cnf.h"
+#include "anf.h"
 
 int main (int argc, const char * argv[]) {
     Proposition *p = STM('P');
@@ -19,11 +19,14 @@ int main (int argc, const char * argv[]) {
                                             q),
                                         p),
                                     q);
-
-    modus_ponen = cnf(modus_ponen);
+    ANF *aux = anf(modus_ponen);
     prop_to_s(modus_ponen);
     fprintf(stdout, "\n");
+    
+    anf_to_s(aux);
+    fprintf(stdout, "\n");
     destroy_prop(modus_ponen);
+    destroy_anf(aux);
     
     return 0;
 }
