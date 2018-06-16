@@ -9,7 +9,7 @@
 #include "proposition.h"
 #include "stack.h"
 
-Proposition* new_stm(void *v) {
+Proposition* new_stm (void *v) {
     Proposition *p = (Proposition *) malloc(sizeof(Proposition));
     PropData *d = (PropData *) malloc(sizeof(PropData));
     Statement *s = (Statement *) malloc(sizeof(Statement));
@@ -23,7 +23,7 @@ Proposition* new_stm(void *v) {
     return p;
 }
 
-Proposition* new_neg(Proposition *p) {
+Proposition* new_neg (Proposition *p) {
     Proposition *r = (Proposition *) malloc(sizeof(Proposition));
     PropData *d = (PropData *) malloc(sizeof(PropData));
     Negation *n = (Negation *) malloc(sizeof(Negation));
@@ -36,7 +36,7 @@ Proposition* new_neg(Proposition *p) {
     return r;
 }
 
-Proposition* new_bin(Operation op, Proposition *p, Proposition *q) {
+Proposition* new_bin (Operation op, Proposition *p, Proposition *q) {
     Proposition *r = (Proposition *) malloc(sizeof(Proposition));
     PropData *d = (PropData *) malloc(sizeof(PropData));
     BinaryOperation *s = (BinaryOperation *) malloc(sizeof(BinaryOperation));
@@ -53,26 +53,41 @@ Proposition* new_bin(Operation op, Proposition *p, Proposition *q) {
     return r;
 }
 
-void free_stm(Proposition *p) {
+void free_stm (Proposition *p) {
     free(p->prop->stm);
     free(p->prop);
     free(p);
 }
 
-void free_neg(Proposition *p) {
+void free_neg (Proposition *p) {
     free(p->prop->neg);
     free(p->prop);
     free(p);
 }
-void free_bin(Proposition *p) {
+void free_bin (Proposition *p) {
     free(p->prop->binary);
     free(p->prop);
     free(p);
 }
 
-void destroy_prop(Proposition *p) {
+void free_prop (Proposition *p) {
+    switch (p->kind) {
+        case 0:
+            free_stm(p);
+            break;
+        case 1:
+            free_neg(p);
+            break;
+        case 2:
+            free_bin(p);
+            break;
+    }
+}
+
+void destroy_prop (Proposition *p) {
     Proposition *aux;
     Stack *s; stack_new(&s);
+    Stack *stm_unique; stack_new(&stm_unique);
     
     push(s, (void *) p);
     
@@ -80,23 +95,30 @@ void destroy_prop(Proposition *p) {
         aux = (Proposition *) top(s);
         switch (aux->kind) {
             case 0:
-                free_stm(aux);
+                push_if_unique(stm_unique, (void *) aux);
                 break;
             case 1:
                 push(s, (void *) unneg(aux));
-                free_neg(aux);
+                push_if_unique(stm_unique, (void *) aux);
                 break;
             case 2:
                 push(s, (void *) lhs(aux));
                 push(s, (void *) rhs(aux));
-                free_bin(aux);
+                push_if_unique(stm_unique, (void *) aux);
                 break;
         }
     }
+
+    while (!is_empty(stm_unique)) {
+        aux = (Proposition *) top(stm_unique);
+        free_prop(aux);
+    }
+
     destroy_stack(&s);
+    destroy_stack(&stm_unique);
 }
 
-void prop_to_s(Proposition *p) {
+void prop_to_s (Proposition *p) {
     switch (p->kind) {
         case 0:
             fprintf(stdout, "%c", (char) p->prop->stm->value);

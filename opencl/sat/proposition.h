@@ -15,6 +15,7 @@
 #define lhs(p) p->prop->binary->lhs
 #define rhs(p) p->prop->binary->rhs
 #define unneg(n) n->prop->neg->p
+#define value(p) p->prop->stm->value
 
 typedef enum {AND, OR, IMPLIE, EQ} Operation;
 
@@ -43,13 +44,14 @@ typedef struct _prop {
     union _prop_union *prop;
 } Proposition;
 
-Proposition* new_stm(void *v);
-Proposition* new_neg(Proposition *p);
-Proposition* new_bin(Operation op, Proposition *p, Proposition *q);
-void destroy_prop(Proposition *p);
-void free_stm(Proposition *p);
-void free_neg(Proposition *p);
-void free_bin(Proposition *p);
-void prop_to_s(Proposition *p);
+Proposition* new_stm (void *v);
+Proposition* new_neg (Proposition *p);
+Proposition* new_bin (Operation op, Proposition *p, Proposition *q);
+void destroy_prop (Proposition *p);
+void free_stm (Proposition *p);
+void free_neg (Proposition *p);
+void free_bin (Proposition *p);
+void free_prop (Proposition *p);
+void prop_to_s (Proposition *p);
 
 #endif /* proposition */
