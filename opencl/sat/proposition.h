@@ -7,8 +7,6 @@
 
 #ifndef Proposition
 
-#include <stdio.h>
-
 #define STM(x) new_stm((void *) x)
 
 #define op(p) p->prop->binary->op

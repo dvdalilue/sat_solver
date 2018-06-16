@@ -5,9 +5,9 @@
 //  Created by David Lilue on 13/06/2018.
 //
 
-#include "stack.h"
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include "stack.h"
 
 void stack_new (Stack **s) {
     *s = (Stack *) malloc (sizeof(Stack));

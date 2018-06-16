@@ -5,6 +5,7 @@
 //  Created by David Lilue on 13/06/2018.
 //
 
+#include <stdio.h>
 #include <stdlib.h>
 #include "proposition.h"
 #include "stack.h"
