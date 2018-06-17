@@ -62,31 +62,15 @@ ANF* and_anf (ANF *p, ANF *q) {
     return new_bin_anf(AND_ANF, p, q);
 }
 
-void free_if_allowed (ANF *p, Mode allowed, Mode asked) {
-    if (allowed == All || allowed == asked) { free_anf(p); }
-}
-
-ANF* distr_anf (ANF *p, ANF *q, Mode m) {
+ANF* distr_anf (ANF *p, ANF *q) {
     ANF *result = NULL;
+    
     if (p->kind == 2 && op(p) == XOR_ANF) {
-        if (m == All || m == Left) {
-            result = xor_anf(distr_anf(lhs(p), q, Left), distr_anf(rhs(p), q, Left));
-            free_anf(p);
-        } else if (q->kind == 2 && op(q) == XOR_ANF) {
-            if (m == All || m == Right) {
-                result = xor_anf(distr_anf(p, lhs(q), Right), distr_anf(p, rhs(q), Right));
-                free_anf(q);
-            }
-        } else {
-            result = xor_anf(distr_anf(lhs(p), q, None), distr_anf(rhs(p), q, None));
-        }
+        result = xor_anf(distr_anf(lhs(p), copy(q)), distr_anf(rhs(p), q));
+        free_anf(p);
     } else if (q->kind == 2 && op(q) == XOR_ANF) {
-        if (m == All || m == Right) {
-            result = xor_anf(distr_anf(p, lhs(q), Right), distr_anf(p, rhs(q), Right));
-            free_anf(q);
-        } else {
-            result = xor_anf(distr_anf(p, lhs(q), None), distr_anf(p, rhs(q), None));
-        }
+        result = xor_anf(distr_anf(copy(p), lhs(q)), distr_anf(p, rhs(q)));
+        free_anf(q);
     } else {
         result = and_anf(p, q);
     }
@@ -110,24 +94,24 @@ ANF* anf (Proposition *p) {
         case 2: // Binary operation
             switch (op(p)) {
                 case AND:
-                    result = distr_anf(anf(lhs(p)), anf(rhs(p)), All);
+                    result = distr_anf(anf(lhs(p)), anf(rhs(p)));
                     break;
                 case OR:
                     lhs_anf = anf(lhs(p));
                     rhs_anf = anf(rhs(p));
-                    result = xor_anf(lhs_anf, xor_anf(rhs_anf, distr_anf(lhs_anf, rhs_anf, None)));
+                    result = xor_anf(lhs_anf, xor_anf(rhs_anf, distr_anf(copy(lhs_anf), copy(rhs_anf))));
                     break;
                 case IMPLIE:
                     lhs_anf = anf(lhs(p));
                     rhs_anf = anf(rhs(p));
-                    result = xor_anf(new_const(1), xor_anf(lhs_anf, distr_anf(lhs_anf, rhs_anf, Right)));
+                    result = xor_anf(new_const(1), xor_anf(lhs_anf, distr_anf(copy(lhs_anf), rhs_anf)));
                     break;
                 case EQ:
                     lhs_anf = anf(lhs(p));
                     rhs_anf = anf(rhs(p));
                     result = distr_anf(
-                                xor_anf(new_const(1), xor_anf(lhs_anf, distr_anf(lhs_anf, rhs_anf, None))),
-                                xor_anf(new_const(1), xor_anf(rhs_anf, distr_anf(rhs_anf, lhs_anf, None))), All);
+                                xor_anf(new_const(1), xor_anf(lhs_anf, distr_anf(copy(lhs_anf), copy(rhs_anf)))),
+                                xor_anf(new_const(1), xor_anf(rhs_anf, distr_anf(copy(rhs_anf), copy(lhs_anf)))));
                     break;
             }
             // free_bin(p);
@@ -209,6 +193,22 @@ void destroy_anf (ANF *p) {
 }
 
 ANF* reduce (ANF *p) {
+    return NULL;
+}
+
+ANF* copy (ANF *p) {
+    switch (p->kind) {
+        case 0:
+            return new_const(cnst(p));
+            break;
+        case 1:
+            return new_var(var(p));
+            break;
+        case 2:
+            return new_bin_anf(op(p), copy(lhs(p)), copy(rhs(p)));
+            break;
+    }
+    printf("THIS NEVER HAS TO HAPPEN\n");
     return NULL;
 }
 
