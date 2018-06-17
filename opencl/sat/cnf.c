@@ -14,7 +14,7 @@ Proposition* distr_cnf (Proposition *p, Proposition *q) {
     if (p->kind == 2 && op(p) == AND) {
         result = new_bin(AND, distr_cnf(lhs(p), q), distr_cnf(rhs(p), q));
         free_bin(p);
-    } else if (q->kind == 2 && op(p) == AND) {
+    } else if (q->kind == 2 && op(q) == AND) {
         result = new_bin(AND, distr_cnf(p, lhs(q)), distr_cnf(p, rhs(q)));
         free_bin(q);
     } else {
