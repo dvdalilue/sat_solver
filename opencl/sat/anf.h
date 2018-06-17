@@ -9,7 +9,14 @@
 
 #include "proposition.h"
 
+#define VAR(p) new_var((void *) p)
+
+#define cnst(p) p->prop->constant->value
+#define var(p) p->prop->variable->var
+
 typedef enum {AND_ANF, XOR_ANF} OpANF;
+
+typedef enum {None, Left, Right, All} Mode;
 
 typedef struct _constant {
     int value;
@@ -41,7 +48,7 @@ ANF* new_var (void *var);
 ANF* new_bin_anf (OpANF op, ANF *p, ANF *q);
 ANF* xor_anf (ANF *p, ANF *q);
 ANF* and_anf (ANF *p, ANF *q);
-ANF* distr_anf (ANF *p, ANF *q);
+ANF* distr_anf (ANF *p, ANF *q, Mode lv);
 ANF* anf (Proposition *p);
 ANF* reduce (ANF *p);
 void free_anf (ANF *p);

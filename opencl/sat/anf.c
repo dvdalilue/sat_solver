@@ -54,27 +54,43 @@ ANF* new_bin_anf (OpANF op, ANF *p, ANF *q) {
     return r;
 }
 
-ANF* distr_anf (ANF *p, ANF *q) {
-    ANF *result = NULL;
-
-    if (p->kind == 2 && op(p) == XOR_ANF) {
-        result = new_bin_anf(XOR_ANF, distr_anf(lhs(p), q), distr_anf(rhs(p), q));
-        // free_bin(p);
-    } else if (q->kind == 2 && op(p) == XOR_ANF) {
-        result = new_bin_anf(XOR_ANF, distr_anf(p, lhs(q)), distr_anf(p, rhs(q)));
-        // free_bin(q);
-    } else {
-        result = new_bin_anf(AND_ANF, p, q);
-    }
-    return result;
-}
-
 ANF* xor_anf (ANF *p, ANF *q) {
     return new_bin_anf(XOR_ANF, p, q);
 }
 
 ANF* and_anf (ANF *p, ANF *q) {
     return new_bin_anf(AND_ANF, p, q);
+}
+
+void free_if_allowed (ANF *p, Mode allowed, Mode asked) {
+    if (allowed == All || allowed == asked) { free_anf(p); }
+}
+
+ANF* distr_anf (ANF *p, ANF *q, Mode m) {
+    ANF *result = NULL;
+    if (p->kind == 2 && op(p) == XOR_ANF) {
+        if (m == All || m == Left) {
+            result = xor_anf(distr_anf(lhs(p), q, Left), distr_anf(rhs(p), q, Left));
+            free_anf(p);
+        } else if (q->kind == 2 && op(q) == XOR_ANF) {
+            if (m == All || m == Right) {
+                result = xor_anf(distr_anf(p, lhs(q), Right), distr_anf(p, rhs(q), Right));
+                free_anf(q);
+            }
+        } else {
+            result = xor_anf(distr_anf(lhs(p), q, None), distr_anf(rhs(p), q, None));
+        }
+    } else if (q->kind == 2 && op(q) == XOR_ANF) {
+        if (m == All || m == Right) {
+            result = xor_anf(distr_anf(p, lhs(q), Right), distr_anf(p, rhs(q), Right));
+            free_anf(q);
+        } else {
+            result = xor_anf(distr_anf(p, lhs(q), None), distr_anf(p, rhs(q), None));
+        }
+    } else {
+        result = and_anf(p, q);
+    }
+    return result;
 }
 
 ANF* anf (Proposition *p) {
@@ -84,7 +100,7 @@ ANF* anf (Proposition *p) {
     
     switch (p->kind) {
         case 0: // Statement
-            result = new_var(p->prop->stm->value);
+            result = new_var(value(p));
             // free_stm(p);
             break;
         case 1: // Negation
@@ -94,28 +110,61 @@ ANF* anf (Proposition *p) {
         case 2: // Binary operation
             switch (op(p)) {
                 case AND:
-                    result = distr_anf(anf(lhs(p)), anf(rhs(p)));
+                    result = distr_anf(anf(lhs(p)), anf(rhs(p)), All);
                     break;
                 case OR:
                     lhs_anf = anf(lhs(p));
                     rhs_anf = anf(rhs(p));
-                    result = xor_anf(lhs_anf, xor_anf(rhs_anf, distr_anf(lhs_anf, rhs_anf)));
+                    result = xor_anf(lhs_anf, xor_anf(rhs_anf, distr_anf(lhs_anf, rhs_anf, None)));
                     break;
                 case IMPLIE:
                     lhs_anf = anf(lhs(p));
                     rhs_anf = anf(rhs(p));
-                    result = xor_anf(new_const(1), xor_anf(lhs_anf, distr_anf(lhs_anf, rhs_anf)));
+                    result = xor_anf(new_const(1), xor_anf(lhs_anf, distr_anf(lhs_anf, rhs_anf, Right)));
                     break;
                 case EQ:
-                    result = anf(new_bin(AND,
-                                         new_bin(IMPLIE, lhs(p), rhs(p)),
-                                         new_bin(IMPLIE, rhs(p), lhs(p))));
+                    lhs_anf = anf(lhs(p));
+                    rhs_anf = anf(rhs(p));
+                    result = distr_anf(
+                                xor_anf(new_const(1), xor_anf(lhs_anf, distr_anf(lhs_anf, rhs_anf, None))),
+                                xor_anf(new_const(1), xor_anf(rhs_anf, distr_anf(rhs_anf, lhs_anf, None))), All);
                     break;
             }
             // free_bin(p);
             break;
     }
     return result;
+}
+
+ANF* anf_it (Proposition *p) {
+    //    ANF *result = NULL;
+    Proposition *tmp = NULL;
+    
+    Stack *s; stack_new(&s);
+    Stack *f; stack_new(&f);
+    
+    push(s, (void *) p);
+    
+    while (!is_empty(s)) {
+        tmp = (Proposition *) top(s);
+        
+        switch (tmp->kind) {
+            case 0:
+                new_var(value(tmp));
+                break;
+            case 1:
+                
+                break;
+            case 2:
+                
+                break;
+                
+            default:
+                break;
+        }
+    }
+    
+    return NULL;
 }
 
 void free_anf (ANF *p) {
@@ -143,26 +192,18 @@ void destroy_anf (ANF *p) {
 
     while (!is_empty(s)) {
         aux = (ANF *) top(s);
-        switch (aux->kind) {
-            case 0:
-                push_if_unique(anf_unique, (void *) aux);
-                break;
-            case 1:
-                push_if_unique(anf_unique, (void *) aux);
-                break;
-            case 2:
-                push(s, (void *) aux->prop->binary->lhs);
-                push(s, (void *) aux->prop->binary->rhs);
-                push_if_unique(anf_unique, (void *) aux);
-                break;
+        if (aux->kind == 2) {
+            push(s, (void *) lhs(aux));
+            push(s, (void *) rhs(aux));
         }
+        push_if_unique(anf_unique, (void *) aux);
     }
     
     while (!is_empty(anf_unique)) {
         aux = (ANF *) top(anf_unique);
         free_anf(aux);
     }
-    
+
     destroy_stack(&s);
     destroy_stack(&anf_unique);
 }
@@ -174,15 +215,15 @@ ANF* reduce (ANF *p) {
 void anf_to_s (ANF *p) {
     switch (p->kind) {
         case 0:
-            fprintf(stdout, "%d", p->prop->constant->value);
+            fprintf(stdout, "%d", cnst(p));
             break;
         case 1:
-            fprintf(stdout, "%c", (char) p->prop->variable->var);
+            fprintf(stdout, "%c", (char) var(p));
             break;
         case 2:
             fprintf(stdout, "(");
-            anf_to_s(p->prop->binary->lhs);
-            switch (p->prop->binary->op) {
+            anf_to_s(lhs(p));
+            switch (op(p)) {
                 case 0:
                     fprintf(stdout, " and ");
                     break;
@@ -193,7 +234,7 @@ void anf_to_s (ANF *p) {
                     fprintf(stdout, " op ");
                     break;
             }
-            anf_to_s(p->prop->binary->rhs);
+            anf_to_s(rhs(p));
             fprintf(stdout, ")");
             break;
         default:
