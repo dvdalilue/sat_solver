@@ -10,80 +10,75 @@
 #include "nnf.h"
 
 Proposition* impl_free (Proposition *p) {
-    Proposition *actual = p;
-    Proposition *result = p;
-
-    switch (actual->kind) {
+    switch (p->kind) {
+        case 0:
+            return STM(value(p));
         case 1:
-            result = new_neg(impl_free(desneg(actual)));
-            free_neg(actual);
-            break;
+            return new_neg(impl_free(desneg(p)));
         case 2:
-            if (op(actual) == IMPLIE) {
-                result = new_bin(OR,
-                           new_neg(impl_free(lhs(actual))),
-                                impl_free(rhs(actual))
+            if (op(p) == IMPLIE) {
+                return new_bin(OR,
+                           new_neg(impl_free(lhs(p))),
+                                impl_free(rhs(p))
                         );
-            } else if (op(actual) == EQ) {
-                result = new_bin(AND,
+            } else if (op(p) ==  EQ) {
+                return new_bin(AND,
                            new_bin(OR,
-                                new_neg(impl_free(lhs(actual))),
-                                     impl_free(rhs(actual))),
+                                new_neg(impl_free(rhs(p))),
+                                impl_free(lhs(p))),
                            new_bin(OR,
-                                new_neg(impl_free(rhs(actual))),
-                                    impl_free(lhs(actual)))
+                                new_neg(impl_free(lhs(p))),
+                                impl_free(rhs(p)))
                            );
             } else {
-                result = new_bin(op(actual),
-                           impl_free(lhs(actual)),
-                           impl_free(rhs(actual)));
+                return new_bin(op(p),
+                            impl_free(lhs(p)),
+                            impl_free(rhs(p)));
             }
-            free_bin(actual);
-            break;
     }
-    return result;
+    return NULL; // This should never happend
 }
 
 Proposition* nnf (Proposition *p) {
-    Proposition *actual = impl_free(p);
-    Proposition *result = actual;
+    Proposition *current = impl_free(p);
+    Proposition *result = current;
     
-    switch (actual->kind) {
+    switch (current->kind) {
         case 1:
-            switch (desneg(actual)->kind) {
+            switch (desneg(current)->kind) {
                 case 1:
-                    result = nnf(desneg(desneg(actual)));
-                    free_neg(desneg(actual));
-                    free_neg(actual);
+                    result = nnf(desneg(desneg(current)));
+                    free_neg(desneg(current));
+                    free_neg(current);
                     break;
                 case 2:
-                    switch (op(desneg(actual))) {
+                    switch (op(desneg(current))) {
                         case AND:
                             result = new_bin(OR,
-                                        nnf(new_neg(lhs(desneg(actual)))),
-                                        nnf(new_neg(rhs(desneg(actual)))));
+                                        nnf(new_neg(lhs(desneg(current)))),
+                                        nnf(new_neg(rhs(desneg(current)))));
                             break;
                         case OR:
                             result = new_bin(AND,
-                                        nnf(new_neg(lhs(desneg(actual)))),
-                                        nnf(new_neg(rhs(desneg(actual)))));
+                                        nnf(new_neg(lhs(desneg(current)))),
+                                        nnf(new_neg(rhs(desneg(current)))));
                             break;
                         default:
-                            result = new_bin(op(desneg(actual)),
-                                        nnf(lhs(desneg(actual))),
-                                        nnf(rhs(desneg(actual))));
+                            result = new_bin(op(desneg(current)),
+                                        nnf(lhs(desneg(current))),
+                                        nnf(rhs(desneg(current))));
                             break;
                     }
-                    free_bin(desneg(actual));
-                    free_neg(actual);
+                    free_bin(desneg(current));
+                    free_neg(current);
                     break;
             }
             break;
         case 2:
-            result = new_bin(op(actual),
-                             nnf(lhs(actual)),
-                             nnf(rhs(actual)));
-            free_bin(actual);
+            result = new_bin(op(current),
+                             nnf(lhs(current)),
+                             nnf(rhs(current)));
+            free_bin(current);
             break;
     }
     return result;
