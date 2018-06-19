@@ -54,6 +54,22 @@ Proposition* new_bin (Operation op, Proposition *p, Proposition *q) {
     return r;
 }
 
+Proposition* copy_prop (Proposition *p) {
+    switch (p->kind) {
+        case 0:
+            return new_stm(value(p));
+            break;
+        case 1:
+            return new_neg(copy_prop(desneg(p)));
+            break;
+        case 2:
+            return new_bin(op(p), copy_prop(lhs(p)), copy_prop(rhs(p)));
+            break;
+    }
+    printf("THIS NEVER HAS TO HAPPEN\n");
+    return NULL;
+}
+
 void free_stm (Proposition *p) {
     free(p->prop->stm);
     free(p->prop);

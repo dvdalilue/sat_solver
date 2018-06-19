@@ -45,6 +45,7 @@ typedef struct _prop {
 Proposition* new_stm (void *v);
 Proposition* new_neg (Proposition *p);
 Proposition* new_bin (Operation op, Proposition *p, Proposition *q);
+Proposition* copy_prop (Proposition *p);
 void destroy_prop (Proposition *p);
 void free_stm (Proposition *p);
 void free_neg (Proposition *p);
