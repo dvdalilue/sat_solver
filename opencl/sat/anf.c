@@ -57,9 +57,51 @@ ANF* anf (Proposition *p) {
     return result;
 }
 
+ANF_RPN* new_rpn_opn (ANF *v) {
+    ANF_RPN *rpn = (ANF_RPN *) malloc(sizeof(ANF_RPN));
+    ANF_RPN_UNION *u = (ANF_RPN_UNION *) malloc(sizeof(ANF_RPN_UNION));
+    ANF_RPN_OPN *opn = (ANF_RPN_OPN *) malloc(sizeof(ANF_RPN_OPN));
+    
+    opn->anf = v;
+    u->opn = opn;
+    
+    rpn->kind = OPN;
+    rpn->anf = u;
+    
+    return rpn;
+}
+
+ANF_RPN* new_rpn_opr (ANF *(*operation)(ANF*, ANF*)) {
+    ANF_RPN *rpn = (ANF_RPN *) malloc(sizeof(ANF_RPN));
+    ANF_RPN_UNION *u = (ANF_RPN_UNION *) malloc(sizeof(ANF_RPN_UNION));
+    ANF_RPN_OPR *opr = (ANF_RPN_OPR *) malloc(sizeof(ANF_RPN_OPR));
+    
+    opr->operation = operation;
+    u->opr = opr;
+    
+    rpn->kind = OPR;
+    rpn->anf = u;
+    
+    return rpn;
+}
+
+void free_rpn (ANF_RPN *rpn) {
+    switch (rpn->kind) {
+        case OPN:
+            free(rpn->anf->opn);
+            break;
+        case OPR:
+            free(rpn->anf->opr);
+            break;
+    }
+    free(rpn->anf);
+    free(rpn);
+}
+
 ANF* anf_it (Proposition *p) {
-    //    ANF *result = NULL;
     Proposition *tmp = NULL;
+    ANF_RPN *current;
+    ANF *op1, *op2;
     
     Stack *s; stack_new(&s);
     Stack *f; stack_new(&f);
@@ -71,19 +113,48 @@ ANF* anf_it (Proposition *p) {
         
         switch (tmp->kind) {
             case 0:
-                new_var(value(tmp));
+                push(f, (void *) new_rpn_opn(new_var(value(tmp))));
                 break;
             case 1:
-                push(s, (void *) desneg(p));
+                push(f, (void *) new_rpn_opr(&xor_anf));
+                push(f, (void *) new_rpn_opn(new_const(1)));
+                push(s, (void *) desneg(tmp));
                 break;
             case 2:
-                push(s, (void *) lhs(p));
-                push(s, (void *) rhs(p));
+                push(s, (void *) lhs(tmp));
+                push(s, (void *) rhs(tmp));
                 break;
         }
     }
+
+    while (!is_empty(f)) {
+        current = (ANF_RPN *) top(f);
+
+        if (is_empty(f) && current->kind == OPN) {
+            push(f, (void *) current->anf->opn->anf);
+            free_rpn(current);
+            break;
+        }
+
+        switch (current->kind) {
+            case OPR:
+                op1 = (ANF *) top(s);
+                op2 = (ANF *) top(s);
+                push(f, (void *) new_rpn_opn(opr(current)(op1, op2)));
+                break;
+            case OPN:
+                push(s, (void *) current->anf->opn->anf);
+                break;
+        }
+        free_rpn(current);
+    }
     
-    return NULL;
+    op1 = (ANF *) top(f);
+    
+    destroy_stack(&s);
+    destroy_stack(&f);
+
+    return op1;
 }
 
 void destroy_anf (ANF *p) {
