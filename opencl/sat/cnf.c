@@ -10,16 +10,23 @@
 
 Proposition* distr_cnf (Proposition *p, Proposition *q) {
     Proposition *result = NULL;
-    
+    Proposition *lhs_and = NULL,
+                *rhs_and = NULL;
+
     if (p->kind == 2 && op(p) == AND) {
-        result = new_bin(AND,
-                    distr_cnf(lhs(p), copy_prop(q)),
-                    distr_cnf(rhs(p), q));
+        // The recursive call is assigned to a variable because in Linux the
+        // order is not determistic, or is reversed from Mac OSX. Same in the
+        // other conditional branch.
+        lhs_and = distr_cnf(lhs(p), copy_prop(q));
+        rhs_and = distr_cnf(rhs(p), q);
+
+        result = new_bin(AND, lhs_and, rhs_and);
         free_bin(p);
     } else if (q->kind == 2 && op(q) == AND) {
-        result = new_bin(AND,
-                    distr_cnf(copy_prop(p), lhs(q)),
-                    distr_cnf(p, rhs(q)));
+        lhs_and = distr_cnf(copy_prop(p), lhs(q));
+        rhs_and = distr_cnf(p, rhs(q));
+
+        result = new_bin(AND, lhs_and, rhs_and);
         free_bin(q);
     } else {
         result = new_bin(OR, p, q);

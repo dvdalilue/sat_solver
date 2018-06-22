@@ -64,12 +64,20 @@ ANF* and_anf (ANF *p, ANF *q) {
 
 ANF* distr_anf (ANF *p, ANF *q) {
     ANF *result = NULL;
+    ANF *lhs_xor = NULL,
+        *rhs_xor = NULL;
     
     if (p->kind == 2 && op(p) == XOR_ANF) {
-        result = xor_anf(distr_anf(lhs(p), copy(q)), distr_anf(rhs(p), q));
+        lhs_xor = distr_anf(lhs(p), copy(q));
+        rhs_xor = distr_anf(rhs(p), q);
+
+        result = xor_anf(lhs_xor, rhs_xor);
         free_anf(p);
     } else if (q->kind == 2 && op(q) == XOR_ANF) {
-        result = xor_anf(distr_anf(copy(p), lhs(q)), distr_anf(p, rhs(q)));
+        lhs_xor = distr_anf(copy(p), lhs(q));
+        rhs_xor = distr_anf(p, rhs(q));
+
+        result = xor_anf(lhs_xor, rhs_xor);
         free_anf(q);
     } else {
         result = and_anf(p, q);
