@@ -85,6 +85,24 @@ ANF* distr_anf (ANF *p, ANF *q) {
     return result;
 }
 
+ANF* or_to_xor (ANF *lhs, ANF *rhs) {
+    return xor_anf(lhs, xor_anf(rhs, distr_anf(copy(lhs), copy(rhs))));
+}
+
+ANF* implie_to_xor (ANF *lhs, ANF *rhs) {
+    return xor_anf(new_const(1), xor_anf(lhs, distr_anf(copy(lhs), rhs)));    
+}
+
+ANF* eq_to_xor (ANF *lhs, ANF *rhs) {
+    return distr_anf(
+                xor_anf(new_const(1),
+                    xor_anf(lhs,
+                        distr_anf(copy(lhs), copy(rhs)))),
+                xor_anf(new_const(1),
+                    xor_anf(rhs,
+                        distr_anf(copy(rhs), copy(lhs)))));
+}
+
 ANF* reduce (ANF *p) {
     return NULL;
 }

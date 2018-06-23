@@ -9,152 +9,120 @@
 #include <stdio.h>
 #include "anf.h"
 
+ANF* rpn_calculator(Stack *rpn);
+Stack* prop_to_anf_rpn(Proposition *prop);
+
 ANF* anf (Proposition *p) {
     ANF *result = NULL;
     ANF *lhs_anf = NULL;
     ANF *rhs_anf = NULL;
-    
+
     switch (p->kind) {
         case 0: // Statement
-            result = new_var(value(p));
-            break;
+            return new_var(value(p));
         case 1: // Negation
-            result = xor_anf(new_const(1), anf(desneg(p)));
-            break;
+            return xor_anf(new_const(1), anf(desneg(p)));
         case 2: // Binary operation
+            lhs_anf = anf(lhs(p));
+            rhs_anf = anf(rhs(p));
             switch (op(p)) {
                 case AND:
-                    result = distr_anf(anf(lhs(p)), anf(rhs(p)));
-                    break;
+                    return distr_anf(lhs_anf, rhs_anf);
                 case OR:
-                    lhs_anf = anf(lhs(p));
-                    rhs_anf = anf(rhs(p));
-                    result = xor_anf(lhs_anf,
-                                xor_anf(rhs_anf,
-                                    distr_anf(copy(lhs_anf), copy(rhs_anf))));
-                    break;
+                    return or_to_xor(lhs_anf, rhs_anf);
                 case IMPLIE:
-                    lhs_anf = anf(lhs(p));
-                    rhs_anf = anf(rhs(p));
-                    result = xor_anf(new_const(1),
-                                xor_anf(lhs_anf,
-                                    distr_anf(copy(lhs_anf), rhs_anf)));
-                    break;
+                    return implie_to_xor(lhs_anf, rhs_anf);
                 case EQ:
-                    lhs_anf = anf(lhs(p));
-                    rhs_anf = anf(rhs(p));
-                    result = distr_anf(
-                                xor_anf(new_const(1),
-                                    xor_anf(lhs_anf,
-                                        distr_anf(copy(lhs_anf), copy(rhs_anf)))),
-                                xor_anf(new_const(1),
-                                    xor_anf(rhs_anf,
-                                        distr_anf(copy(rhs_anf), copy(lhs_anf)))));
-                    break;
+                    return eq_to_xor(lhs_anf, rhs_anf);
             }
-            break;
     }
-    return result;
-}
-
-ANF_RPN* new_rpn_opn (ANF *v) {
-    ANF_RPN *rpn = (ANF_RPN *) malloc(sizeof(ANF_RPN));
-    ANF_RPN_UNION *u = (ANF_RPN_UNION *) malloc(sizeof(ANF_RPN_UNION));
-    ANF_RPN_OPN *opn = (ANF_RPN_OPN *) malloc(sizeof(ANF_RPN_OPN));
-    
-    opn->anf = v;
-    u->opn = opn;
-    
-    rpn->kind = OPN;
-    rpn->anf = u;
-    
-    return rpn;
-}
-
-ANF_RPN* new_rpn_opr (ANF *(*operation)(ANF*, ANF*)) {
-    ANF_RPN *rpn = (ANF_RPN *) malloc(sizeof(ANF_RPN));
-    ANF_RPN_UNION *u = (ANF_RPN_UNION *) malloc(sizeof(ANF_RPN_UNION));
-    ANF_RPN_OPR *opr = (ANF_RPN_OPR *) malloc(sizeof(ANF_RPN_OPR));
-    
-    opr->operation = operation;
-    u->opr = opr;
-    
-    rpn->kind = OPR;
-    rpn->anf = u;
-    
-    return rpn;
-}
-
-void free_rpn (ANF_RPN *rpn) {
-    switch (rpn->kind) {
-        case OPN:
-            free(rpn->anf->opn);
-            break;
-        case OPR:
-            free(rpn->anf->opr);
-            break;
-    }
-    free(rpn->anf);
-    free(rpn);
 }
 
 ANF* anf_it (Proposition *p) {
-    Proposition *tmp = NULL;
-    ANF_RPN *current;
-    ANF *op1, *op2;
+    return rpn_calculator(prop_to_anf_rpn(p));
+}
+
+Stack* prop_to_anf_rpn(Proposition *prop) {
+    Proposition *current = NULL;
+
+    Stack *prop_s; stack_new(&prop_s);
+    Stack *rpn; stack_new(&rpn);
+
+    push(prop_s, (void *) prop);
     
-    Stack *s; stack_new(&s);
-    Stack *f; stack_new(&f);
-    
-    push(s, (void *) p);
-    
-    while (!is_empty(s)) {
-        tmp = (Proposition *) top(s);
+    while (!is_empty(prop_s)) {
+        current = (Proposition *) top(prop_s);
         
-        switch (tmp->kind) {
+        switch (current->kind) {
             case 0:
-                push(f, (void *) new_rpn_opn(new_var(value(tmp))));
+                push(rpn, (void *) new_rpn_opn(new_var(value(current))));
                 break;
             case 1:
-                push(f, (void *) new_rpn_opr(&xor_anf));
-                push(f, (void *) new_rpn_opn(new_const(1)));
-                push(s, (void *) desneg(tmp));
+                push(rpn, (void *) new_rpn_opr(&xor_anf));
+                push(rpn, (void *) new_rpn_opn(new_const(1)));
+                push(prop_s, (void *) desneg(current));
                 break;
             case 2:
-                push(s, (void *) lhs(tmp));
-                push(s, (void *) rhs(tmp));
+                switch (op(current)) {
+                    case AND:
+                        push(rpn, (void *) new_rpn_opr(&distr_anf));
+                        break;
+                    case OR:
+                        push(rpn, (void *) new_rpn_opr(&or_to_xor));
+                        break;
+                    case IMPLIE:
+                        push(rpn, (void *) new_rpn_opr(&implie_to_xor));
+                        break;
+                    case EQ:
+                        push(rpn, (void *) new_rpn_opr(&eq_to_xor));
+                        break;
+                }
+                push(prop_s, (void *) lhs(current));
+                push(prop_s, (void *) rhs(current));
                 break;
         }
     }
 
-    while (!is_empty(f)) {
-        current = (ANF_RPN *) top(f);
+    destroy_stack(&prop_s);
 
-        if (is_empty(f) && current->kind == OPN) {
-            push(f, (void *) current->anf->opn->anf);
+    return rpn;
+} 
+
+ANF* rpn_calculator(Stack *rpn) {
+    Stack *operands; stack_new(&operands);
+    ANF_RPN *current = NULL;
+
+    ANF *aux_1 = NULL,
+        *aux_2 = NULL;
+
+    while (!is_empty(rpn)) {
+        current = (ANF_RPN *) top(rpn);
+
+        if (is_empty(rpn) && current->kind == OPN) {
+            push(operands, (void *) current->anf->opn->anf);
             free_rpn(current);
             break;
         }
 
         switch (current->kind) {
             case OPR:
-                op1 = (ANF *) top(s);
-                op2 = (ANF *) top(s);
-                push(f, (void *) new_rpn_opn(opr(current)(op1, op2)));
+                aux_2 = (ANF *) top(operands);
+                aux_1 = (ANF *) top(operands);
+                push(operands, (void *) opr(current)(aux_1, aux_2));
                 break;
             case OPN:
-                push(s, (void *) current->anf->opn->anf);
+                push(operands, (void *) current->anf->opn->anf);
                 break;
         }
         free_rpn(current);
     }
-    
-    op1 = (ANF *) top(f);
-    
-    destroy_stack(&s);
-    destroy_stack(&f);
 
-    return op1;
+    aux_1 = (ANF *) top(operands);
+
+    destroy_stack(&operands);
+    destroy_stack(&rpn);
+
+    return aux_1;
 }
 
 void destroy_anf (ANF *p) {
