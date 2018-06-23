@@ -13,7 +13,6 @@ ANF* rpn_calculator(Stack *rpn);
 Stack* prop_to_anf_rpn(Proposition *prop);
 
 ANF* anf (Proposition *p) {
-    ANF *result = NULL;
     ANF *lhs_anf = NULL;
     ANF *rhs_anf = NULL;
 
@@ -36,6 +35,7 @@ ANF* anf (Proposition *p) {
                     return eq_to_xor(lhs_anf, rhs_anf);
             }
     }
+    return NULL;
 }
 
 ANF* anf_it (Proposition *p) {
