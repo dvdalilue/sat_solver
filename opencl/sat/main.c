@@ -24,13 +24,13 @@ int main (int argc, const char * argv[]) {
     //                             new_bin(AND,
     //                                 new_bin(IMPLIE,
     //                                     STM('P'),
-    //                                     STM('Q'),
+    //                                     STM('Q')),
     //                                 STM('P')),
     //                             STM('Q'));
 
     ANF *aux = anf_it(test_1);
 
-    // prop_to_s(modus_ponen);
+    // prop_to_s(test_1);
     // fprintf(stdout, "\n");
     anf_to_s(aux);
     fprintf(stdout, "\n");
