@@ -9,8 +9,8 @@
 #include <stdio.h>
 #include "anf.h"
 
-ANF* rpn_calculator(Stack *rpn);
-Stack* prop_to_anf_rpn(Proposition *prop);
+ANF* rpn_calculator (Stack *rpn);
+Stack* prop_to_anf_rpn (Proposition *prop);
 
 ANF* anf (Proposition *p) {
     ANF *lhs_anf = NULL;
@@ -42,7 +42,7 @@ ANF* anf_it (Proposition *p) {
     return rpn_calculator(prop_to_anf_rpn(p));
 }
 
-Stack* prop_to_anf_rpn(Proposition *prop) {
+Stack* prop_to_anf_rpn (Proposition *prop) {
     Proposition *current = NULL;
 
     Stack *prop_s; stack_new(&prop_s);
@@ -88,7 +88,7 @@ Stack* prop_to_anf_rpn(Proposition *prop) {
     return rpn;
 } 
 
-ANF* rpn_calculator(Stack *rpn) {
+ANF* rpn_calculator (Stack *rpn) {
     Stack *operands; stack_new(&operands);
     ANF_RPN *current = NULL;
 
