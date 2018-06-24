@@ -8,6 +8,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "anf.h"
+#include "anf_array.h"
+
+#define get_p(a, i) index(a, i, char)
 
 int main (int argc, const char * argv[]) {
     Proposition *q = STM('Q');
@@ -28,15 +31,35 @@ int main (int argc, const char * argv[]) {
     //                                 STM('P')),
     //                             STM('Q'));
 
-    ANF *aux = anf_it(test_1);
+//    ANF *aux = anf_it(test_1);
 
-    // prop_to_s(test_1);
-    // fprintf(stdout, "\n");
-    anf_to_s(aux);
-    fprintf(stdout, "\n");
+//    prop_to_s(test_1);
+//    fprintf(stdout, "\n");
+//    anf_to_s(aux);
+//    fprintf(stdout, "\n");
+
+    ANF_Array *x = one();
+    ANF_Array *y = zero();
+
+    switch (compare_bs(get_anf_bs(x,0), get_anf_bs(y,0))) {
+       case EQ:
+           printf("Iguales\n");
+           break;
+       case LT:
+           printf("Menor\n");
+           break;
+       case GT:
+           printf("Mayor\n");
+           break;
+    }
+    
+    free_anf_array(x);
+    free_anf_array(y);
+    
+//    printf("%d, %d\n", (char) get_p(a, 1), (char) get_p(a, 0));
 
     destroy_prop(test_1);
-    destroy_anf(aux);
+//    destroy_anf(aux);
 
     return 0;
 
