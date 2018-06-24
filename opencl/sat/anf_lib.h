@@ -17,8 +17,6 @@
 
 typedef enum {AND_ANF, XOR_ANF} OpANF;
 
-typedef enum {None, Left, Right, All} Mode;
-
 typedef struct _constant {
     int value;
 } Constant;
