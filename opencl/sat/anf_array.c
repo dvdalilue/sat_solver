@@ -15,8 +15,16 @@ void array_init(Array *a) {
     }
 }
 
-ANF_Array* new_anf_array (void) {
+ANF_Array* empty_anf_array (void) {
     ANF_Array *anf_a = (ANF_Array *) malloc(sizeof(ANF_Array));
+    array_new(&anf_a->xors, 7, ANF_BitString*);
+    array_init(anf_a->xors);
+    anf_a->components = 0;
+
+    return anf_a;
+}
+
+ANF_BitString* new_bitstring (void) {
     ANF_BitString *bs = (ANF_BitString *) malloc(sizeof(ANF_BitString));
     
     array_new(&bs->bstring, 128, char);
@@ -24,12 +32,16 @@ ANF_Array* new_anf_array (void) {
         index(bs->bstring, i, char) = 0;
     }
     bs->bits_on = 0;
+
+    return bs;
+}
+
+ANF_Array* new_anf_array (void) {
+    ANF_Array *anf_a = empty_anf_array();
+    ANF_BitString *bs = new_bitstring();
     
-    array_new(&anf_a->xors, 7, ANF_BitString*);
-    array_init(anf_a->xors);
-    
-    index(anf_a->xors, 0, ANF_BitString*) = bs;
-    anf_a->components = 1;
+    get_anf_bs(anf_a, 0) = bs;
+    anf_a->components++;
     
     return anf_a;
 }
@@ -57,9 +69,45 @@ ANF_Array* new_poly (int var) {
     return p;
 }
 
-//ANF_Array* xor_anf_array (ANF_Array *p, ANF_Array *q) {
-//    
-//}
+ANF_Array* xor_anf_array (ANF_Array *p, ANF_Array *q) {
+    ANF_Array *merge = empty_anf_array();
+
+    int i = 0,
+        j = 0,
+        k = 0,
+        n = p->components + q->components;
+
+    while (k < n) {
+        if (get_anf_bs(p, i) == NULL) {
+            get_anf_bs(merge, k) = get_anf_bs(q, j);
+            j++;
+            k++;
+            continue;
+        } else if (get_anf_bs(q, j) == NULL) {
+            get_anf_bs(merge, k) = get_anf_bs(p, i);
+            i++;
+            k++;
+            continue;
+        }
+
+        switch (compare_bs(get_anf_bs(p, i), get_anf_bs(q, j))) {
+            case EQ:
+                get_anf_bs(merge, k) = get_anf_bs(q,j);
+                j++;
+                k++;
+                // no break
+            case LT:
+                get_anf_bs(merge, k) = get_anf_bs(p,i);
+                i++;
+                break;
+            case GT:
+                get_anf_bs(merge, k) = get_anf_bs(q,j);
+                j++;
+                break;
+        }
+        k++;
+    }
+}
 
 Ordering compare_bs (ANF_BitString *x, ANF_BitString *y) {
     if (x->bits_on < y->bits_on) {
