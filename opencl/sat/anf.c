@@ -31,7 +31,7 @@ ANF* anf (Proposition *p) {
                     return or_to_xor(lhs_anf, rhs_anf);
                 case IMPLIE:
                     return implie_to_xor(lhs_anf, rhs_anf);
-                case EQ:
+                case EQUAL:
                     return eq_to_xor(lhs_anf, rhs_anf);
             }
     }
@@ -73,7 +73,7 @@ Stack* prop_to_anf_rpn(Proposition *prop) {
                     case IMPLIE:
                         push(rpn, (void *) new_rpn_opr(&implie_to_xor));
                         break;
-                    case EQ:
+                    case EQUAL:
                         push(rpn, (void *) new_rpn_opr(&eq_to_xor));
                         break;
                 }

@@ -21,7 +21,7 @@ Proposition* impl_free (Proposition *p) {
                            new_neg(impl_free(lhs(p))),
                                 impl_free(rhs(p))
                         );
-            } else if (op(p) ==  EQ) {
+            } else if (op(p) ==  EQUAL) {
                 return new_bin(AND,
                            new_bin(OR,
                                 new_neg(impl_free(rhs(p))),
