@@ -18,16 +18,18 @@ void array_init(Array *a) {
 ANF_Array* new_anf_array (void) {
     ANF_Array *anf_a = (ANF_Array *) malloc(sizeof(ANF_Array));
     ANF_BitString *bs = (ANF_BitString *) malloc(sizeof(ANF_BitString));
-    array_new(&bs->bstring, 128, char);
     
+    array_new(&bs->bstring, 128, char);
     for (int i = 0; i < 128; i++) {
         index(bs->bstring, i, char) = 0;
     }
+    bs->bits_on = 0;
     
     array_new(&anf_a->xors, 7, ANF_BitString*);
+    array_init(anf_a->xors);
     
     index(anf_a->xors, 0, ANF_BitString*) = bs;
-    anf_a->components++;
+    anf_a->components = 1;
     
     return anf_a;
 }

@@ -8,11 +8,10 @@
 #ifndef Array
 
 #define index(a, i, t) ((t*) a->elements)[i]
-#define array_new(a, size_t, type) ({ \
+#define array_new(a, a_size, type) ({ \
             *a = (Array *) malloc(sizeof(Array)); \
-            (*a)->size = size_t; \
-            (*a)->elements = (void *) malloc(sizeof(type) * size_t); \
-            array_init(*a); \
+            (*a)->size = a_size; \
+            (*a)->elements = (void *) malloc(sizeof(type) * a_size); \
         })
 #define get_anf_bs(anf, i) index(anf->xors, i, ANF_BitString *)
 #define get_bs(anf, i) get_anf_bs(anf, i)->bstring
@@ -37,6 +36,8 @@ typedef struct _anf_xor_array {
 } ANF_Array;
 
 void array_init (Array *ar);
+
+ANF_Array* new_anf_array (void);
 ANF_Array* one (void);
 ANF_Array* zero (void);
 ANF_Array* new_poly (int var);
