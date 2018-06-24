@@ -15,7 +15,7 @@
 #define desneg(n) n->prop->neg->p
 #define value(p) p->prop->stm->value
 
-typedef enum {AND, OR, IMPLIE, EQ} Operation;
+typedef enum {AND, OR, IMPLIE, EQUAL} Operation;
 
 typedef struct _binary_op {
     Operation op;
