@@ -34,6 +34,7 @@ ANF_Array* new_poly (int var);
 ANF_BitString* get_anf_bs (ANF_Array *anf, int i);
 Ordering compare_bs (ANF_BitString *x, ANF_BitString *y);
 ANF_BitString* copy_bs (ANF_BitString *bs);
+void merge_sort_anf (ANF_Array *p);
 void add_xor_comp (ANF_Array *p, ANF_BitString *bs);
 void free_anf_array (ANF_Array *p);
 void free_anf_array_deep (ANF_Array *p);

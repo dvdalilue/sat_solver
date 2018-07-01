@@ -136,6 +136,57 @@ ANF_BitString* copy_bs (ANF_BitString *bs) {
     return cp_bs;
 }
 
+void merge (ANF_Array *p, int a, int b, int c) {
+    int n_ls = b - a + 1;
+    int n_rs = c - b;
+    int i, j, k;
+
+    ANF_BitString **left =
+        (ANF_BitString **) malloc(sizeof(ANF_BitString*) * n_ls);
+    ANF_BitString **right =
+        (ANF_BitString **) malloc(sizeof(ANF_BitString*) * n_rs);
+
+    for (i = 0; i < n_ls; i++)
+        left[i] = get_anf_bs(p, a + i);
+
+    for (j = 0; j < n_rs; j++)
+        right[j] = get_anf_bs(p, b + 1 + j);
+
+    i = j = 0;
+    k = a;
+
+    while (i < n_ls && j < n_rs) {
+        switch (compare_bs(left[i], right[j])) {
+            case EQ:
+            case LT:
+                dig_anf_bs(p, k++) = left[i++];
+                break;
+            case GT:
+                dig_anf_bs(p, k++) = right[j++];
+                break;
+        }
+    }
+
+    while (i < n_ls) dig_anf_bs(p, k++) = left[i++];
+    while (j < n_rs) dig_anf_bs(p, k++) = right[j++];
+
+    free(left);
+    free(right);
+}
+
+void merge_sort_aux (ANF_Array *p, int a, int c) {
+    if (a < c) {
+        int b = (a + c) / 2;
+        merge_sort_aux(p, a, b);
+        merge_sort_aux(p, b + 1, c);
+        merge(p, a, b, c);
+    }
+}
+
+void merge_sort_anf (ANF_Array *p) {
+    merge_sort_aux(p, 0, p->xors->size - 1);
+}
+
 void free_anf_array (ANF_Array *p) {
     array_free(p->xors);
     free(p);
