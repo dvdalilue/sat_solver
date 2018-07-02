@@ -6,7 +6,7 @@ import Structs.Essentials.Prop
 import Structs.CNF
 import Structs.NNF
 import Structs.BDD
-import Structs.ANF
+-- import Structs.ANF
 import Tseytin
 
 import DPLL.CNF
@@ -314,14 +314,18 @@ graph2 = Graph 10 10 [[2],[1,3],[2,5],[2,5,6,7,8],[3,4,6,7],[4,5,7,10],[4,6,8,9,
 -- benchmark 3 colors: 1311235211000000 picoseconds (20 min)
 graph3 = Graph 5 5 [[3,5],[3,4,5],[1,2,4],[2,3,5],[1,2,4]] :: Graph Int
 
-possibleColorings v nc = [Stmnt (n,c) | n <- [1..v], c <- take nc ['A'..'Z']]
+graph4 = Graph 23 71 [[2,4,7,9,13,15,18,20],[1,3,6,8,12,14,17,19],[2,5,7,10,13,16,18,21],[1,5,6,10,12,16,17,21],[3,4,8,9,14,15,19,20],[2,4,11,13,15,22],[1,3,11,12,14,22],[2,5,11,13,16,22],[1,5,11,12,16,22],[3,4,11,14,15,22],[6,7,8,9,10,17,18,19,20,21],[2,4,7,9,23],[1,3,6,8,23],[2,5,7,10,23],[1,5,6,10,23],[3,4,8,9,23],[2,4,11,23],[1,3,11,23],[2,5,11,23],[1,5,11,23],[3,4,11,23],[6,7,8,9,10,23],[12,13,14,15,16,17,18,19,20,21,22]] :: Graph Int
+
+possibleColorings v nc = [Stmnt (n,c) | n <- [1..v], c <- take nc [0..100]]
 
 -- constraints :: Prop (a,b) -> Graph a -> [Prop (a,b)]
-constraints g colors p@(Stmnt (n,c)) =
-    (p :>: (SAT.and $ [Neg (Stmnt (x,c)) | x <- ((adjList g) !! (n-1))])) :&:
-    (p :=: (SAT.and $ [Neg (Stmnt (n,x)) | x <- take colors ['A'..'Z'], x /= c]))
+constraints g colors vec =
+    (SAT.or [Stmnt (vec,i) | i <- take colors [0..100]]) :&:
+    (SAT.and [Neg (Stmnt (vec,i) :&: Stmnt (vec,j)) | i <- take colors [0..100], j <- take colors [0..100], i < j]) :&:
+    (SAT.and [Neg (Stmnt (vec,i) :&: Stmnt (w,i)) | w <- ((adjList g) !! (vec-1)), i <- take colors [0..100]])
 
-graph_coloring g colors = SAT.and $ map (constraints g colors) (possibleColorings (nVertex g) colors)
+graph_coloring :: Graph Int -> Int -> Prop (Int, Int)
+graph_coloring g colors = SAT.and $ map (constraints g colors) [1..(nVertex g)]
 
 n1a = Stmnt (1,'A') :: Prop (Int, Char)
 n1b = Stmnt (1,'B')
@@ -360,12 +364,12 @@ or = foldl1 (:|:)
 and :: [Prop a] -> Prop a
 and = foldl1 (:&:)
 
-benchmark :: Graph Int -> Int -> IO Integer
-benchmark g c = do
-    start <- getCPUTime
-    let r = Structs.ANF.fromProp $ nnf $ graph_coloring g c
-    end <- r `deepseq` getCPUTime
-    return (end - start)
+-- benchmark :: Graph Int -> Int -> IO Integer
+-- benchmark g c = do
+--     start <- getCPUTime
+--     let r = Structs.ANF.fromProp $ nnf $ graph_coloring g c
+--     end <- r `deepseq` getCPUTime
+--     return (end - start)
 
 -- fib = scanl1 (+) $ 0:1:fib
 

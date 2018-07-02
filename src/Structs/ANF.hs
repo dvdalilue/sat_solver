@@ -164,5 +164,5 @@ reduce :: (Ord (ANF a), Ord a, Eq a) => ANF a -> ANF a
 reduce = foldr1 XOR . foldr enviousCons [] . reduceOr [] . pure
 
 fromProp :: (Ord (ANF a), Ord a, Eq a) => Prop a -> ANF a
-fromProp = sExOr'
--- fromProp = reduce . sExOr
+-- fromProp = sExOr'
+fromProp = reduce . sExOr
