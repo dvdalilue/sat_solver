@@ -43,13 +43,13 @@ deriving instance Eq (BDD a)
 
 -- Just pretty printing the BDD with 'Data.Tree'
 -- | @since 0.1
-instance Show a => Show (BDD a) where
-    show bdd = drawTree $ toDataTree bdd
-        where
-            toDataTree Yes = Node "Yes" []
-            toDataTree No = Node "No" []
-            toDataTree (Decision v y n) =
-                Node (show v) [toDataTree y, toDataTree n]
+-- instance Show a => Show (BDD a) where
+--     show bdd = drawTree $ toDataTree bdd
+--         where
+--             toDataTree Yes = Node "Yes" []
+--             toDataTree No = Node "No" []
+--             toDataTree (Decision v y n) =
+--                 Node (show v) [toDataTree y, toDataTree n]
 
 -- printBDD :: BDD -> Int -> String -> String
 -- printBDD (Decision v y n) d i =

@@ -9,97 +9,177 @@
 #include <stdio.h>
 #include "anf_array.h"
 
-void array_init(Array *a) {
-    for (int i = 0; i < a->size; i++) {
-        index(a, i, void *) = NULL;
-    }
-}
+ANF_Array* xor_anf_array (ANF_Array *p, ANF_Array *q) {
+    ANF_Array *merge = empty_anf_array();
 
-ANF_Array* new_anf_array (void) {
-    ANF_Array *anf_a = (ANF_Array *) malloc(sizeof(ANF_Array));
-    ANF_BitString *bs = (ANF_BitString *) malloc(sizeof(ANF_BitString));
-    array_new(&bs->bstring, 128, char);
-    
-    for (int i = 0; i < 128; i++) {
-        index(bs->bstring, i, char) = 0;
-    }
-    
-    array_new(&anf_a->xors, 7, ANF_BitString*);
-    
-    index(anf_a->xors, 0, ANF_BitString*) = bs;
-    anf_a->components++;
-    
-    return anf_a;
-}
+    int i = 0,
+        j = 0;
 
-ANF_Array* one (void) {
-    return new_anf_array();
-}
-
-ANF_Array* zero (void) {
-    ANF_Array *z = new_anf_array();
-    
-    for (int i = 0; i < 128; i++) {
-        get_bs_comp(z, 0, i) = -1;
-    }
-
-    return z;
-}
-
-ANF_Array* new_poly (int var) {
-    ANF_Array *p = new_anf_array();
-    
-    get_bs_comp(p, 0, var) = 1;
-    get_anf_bs(p, 0)->bits_on++;
-    
-    return p;
-}
-
-//ANF_Array* xor_anf_array (ANF_Array *p, ANF_Array *q) {
-//    
-//}
-
-Ordering compare_bs (ANF_BitString *x, ANF_BitString *y) {
-    if (x->bits_on < y->bits_on) {
-        return LT;
-    } else if (x->bits_on > y->bits_on) {
-        return GT;
-    } else {
-        if (index(x->bstring, 0, char) == -1  &&
-            index(y->bstring, 0, char) == -1) { return EQ; }
-        if (index(x->bstring, 0, char) == -1) { return LT; }
-        if (index(y->bstring, 0, char) == -1) { return GT; }
-        if (x->bits_on == 0) { return EQ; }
-
-        for (int i = 0; i < x->bstring->size; i++) {
-            if (index(x->bstring, i, char) == 1 &&
-                index(y->bstring, i, char) == 0)
-            {
-                return LT;
-            } else if (index(x->bstring, i, char) == 0 &&
-                       index(y->bstring, i, char) == 1)
-            {
-                return GT;
-            }
+    while (i < p->components && j < q->components) {
+        switch (compare_bs(get_anf_bs(p, i), get_anf_bs(q, j))) {
+            case EQ:
+                i++; j++;
+                break;
+            case LT:
+                add_xor_comp(merge, copy_bs(get_anf_bs(p, i++)));
+                break;
+            case GT:
+                add_xor_comp(merge, copy_bs(get_anf_bs(q, j++)));
+                break;
         }
     }
 
-    return EQ;
+    while (i < p->components)
+        add_xor_comp(merge, copy_bs(get_anf_bs(p, i++)));
+
+    while (j < q->components)
+        add_xor_comp(merge, copy_bs(get_anf_bs(q, j++)));
+
+    return merge;
 }
 
-void free_array(Array *a) {
-    free(a->elements);
-    free(a);
-}
+ANF_Array* map_anf_bs (ANF_BitString *bs, ANF_Array *p) {
+    ANF_Array *maped = empty_anf_array();
 
-void free_anf_array (ANF_Array *p) {
     for (int i = 0; i < p->xors->size; i++) {
-        if (index(p->xors, i, ANF_BitString*) != NULL) {
-            free_array(index(p->xors, i, ANF_BitString*)->bstring);
-            free(index(p->xors, i, ANF_BitString*));
+        add_xor_comp_envious(maped, and_bs(get_anf_bs(p, i), bs));
+    }
+
+    return maped;
+}
+
+ANF_BitString* and_bs (ANF_BitString *x, ANF_BitString *y) {
+    ANF_BitString* and = new_bitstring();
+
+    for (int i = 0; i < x->bstring->size; i++) {
+        if (index(x->bstring, i, char) | index(y->bstring, i, char)) {
+            index(and->bstring, i, char) = 1;
+            and->bits_on++;
         }
     }
-    
-    free_array(p->xors);
-    free(p);
+
+    return and;
+}
+
+ANF_Array* and_anf_array (ANF_Array *p, ANF_Array *q) {
+    ANF_Array *result = empty_anf_array();
+    ANF_Array *prev = NULL;
+    ANF_Array *maped = NULL;
+    for (int i = 0; i < p->xors->size; i++) {
+        prev = result;
+        maped = map_anf_bs(get_anf_bs(p, i), q);
+        merge_sort_anf(maped);
+        result = xor_anf_array(prev, maped);
+        free_anf_array_deep(maped);
+        free_anf_array_deep(prev);
+    }
+
+    return result;
+}
+
+ANF_Array* copy_anf_array (ANF_Array *p) {
+    ANF_Array *cp_anf = empty_anf_array();
+
+    for (int i = 0; i < p->components; i++) {
+        add_xor_comp(cp_anf, copy_bs(get_anf_bs(p, i)));
+    }
+
+    return cp_anf;
+}
+
+ANF_Array* or_to_xor_array (ANF_Array *lhs, ANF_Array *rhs) {
+    ANF_Array *result = NULL,
+              *tmp = NULL;
+
+    tmp = and_anf_array(lhs, rhs);
+    result = xor_anf_array(rhs, tmp);
+    free_anf_array_deep(tmp);
+    tmp = result;
+    result = xor_anf_array(lhs, tmp);
+    free_anf_array_deep(tmp);
+
+    return result;
+}
+
+ANF_Array* implie_to_xor_array (ANF_Array *lhs, ANF_Array *rhs) {
+    ANF_Array *result = NULL,
+              *tmp = NULL,
+              *local_one = one();
+
+    tmp = and_anf_array(lhs, rhs);
+    result = xor_anf_array(lhs, tmp);
+    free_anf_array_deep(tmp);
+    tmp = result;
+    result = xor_anf_array(local_one, tmp);
+    free_anf_array_deep(tmp);
+    free_anf_array_deep(local_one);
+
+    return result;
+}
+
+ANF_Array* eq_to_xor_array (ANF_Array *lhs, ANF_Array *rhs) {
+    ANF_Array *result = NULL,
+              *aux = NULL,
+              *tmp_l = NULL,
+              *tmp_r = NULL,
+              *local_one = one();
+
+    aux = and_anf_array(lhs, rhs);
+    tmp_l = xor_anf_array(lhs, aux);
+    free_anf_array_deep(aux);
+    aux = tmp_l;
+    tmp_l = xor_anf_array(local_one, aux);
+    free_anf_array_deep(aux);
+
+    aux = and_anf_array(rhs, lhs);
+    tmp_r = xor_anf_array(rhs, aux);
+    free_anf_array_deep(aux);
+    aux = tmp_r;
+    tmp_r = xor_anf_array(local_one, aux);
+    free_anf_array_deep(aux);
+
+    result = and_anf_array(tmp_l, tmp_r);
+    free_anf_array_deep(tmp_l);
+    free_anf_array_deep(tmp_r);
+    free_anf_array_deep(local_one);
+
+    return result;
+}
+
+ANF_Array* anf_array (Proposition *p) {
+    ANF_Array *lhs_anf = NULL;
+    ANF_Array *rhs_anf = NULL;
+    ANF_Array *result = NULL;
+
+    switch (p->kind) {
+        case 0: // Statement
+            return new_poly((int) value(p));
+        case 1: // Negation
+            rhs_anf = anf_array(desneg(p));
+            lhs_anf = one();
+            result = xor_anf_array(lhs_anf, rhs_anf);
+            free_anf_array_deep(rhs_anf);
+            free_anf_array_deep(lhs_anf);
+            break;
+        case 2: // Binary operation
+            lhs_anf = anf_array(lhs(p));
+            rhs_anf = anf_array(rhs(p));
+            switch (op(p)) {
+                case AND:
+                    result = and_anf_array(lhs_anf, rhs_anf);
+                    break;
+                case OR:
+                    result = or_to_xor_array(lhs_anf, rhs_anf);
+                    break;
+                case IMPLIE:
+                    result = implie_to_xor_array(lhs_anf, rhs_anf);
+                    break;
+                case EQUAL:
+                    result = eq_to_xor_array(lhs_anf, rhs_anf);
+                    break;
+            }
+            free_anf_array_deep(lhs_anf);
+            free_anf_array_deep(rhs_anf);
+    }
+    return result;
 }

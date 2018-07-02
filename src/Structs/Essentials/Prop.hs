@@ -1,3 +1,6 @@
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
+
 ---------------------------------------------------------------
 -- |
 -- Module      :  Structs.Essentials.Prop
@@ -31,14 +34,24 @@ data Prop a
 
 -- Just pretty printing the propositions
 -- | @since 0.1
-instance Show a => Show (Prop a) where
-    show p = go p $ -1
-        where
-            go (lhs :=: rhs) pre = shouldParent pre 0 $ (go lhs 0) ++ " ↔ " ++ (go rhs 0)
-            go (lhs :>: rhs) pre = shouldParent pre 1 $ (go lhs 1) ++ " → " ++ (go rhs 1)
-            go (lhs :|: rhs) pre = shouldParent pre 2 $ (go lhs 2) ++ " ∨ " ++ (go rhs 2)
-            go (lhs :&: rhs) pre = shouldParent pre 3 $ (go lhs 3) ++ " ∧ " ++ (go rhs 3)
-            go (Neg  p) pre = "¬" ++ (go p 4)
-            go (Stmnt p) pre = show p
+-- instance Show a => Show (Prop a) where
+--     show p = go p $ -1
+--         where
+--             go (lhs :=: rhs) pre = shouldParent pre 0 $ (go lhs 0) ++ " ↔ " ++ (go rhs 0)
+--             go (lhs :>: rhs) pre = shouldParent pre 1 $ (go lhs 1) ++ " → " ++ (go rhs 1)
+--             go (lhs :|: rhs) pre = shouldParent pre 2 $ (go lhs 2) ++ " ∨ " ++ (go rhs 2)
+--             go (lhs :&: rhs) pre = shouldParent pre 3 $ (go lhs 3) ++ " ∧ " ++ (go rhs 3)
+--             go (Neg  p) pre = "¬" ++ (go p 4)
+--             go (Stmnt p) pre = show p
 
-            shouldParent a b s = if a >= b then "(" ++ s ++ ")" else s
+--             shouldParent a b s = if a >= b then "(" ++ s ++ ")" else s
+
+instance  Show (Prop (Int,Int)) where
+    show p = go p
+        where
+            go (lhs :=: rhs) = "new_bin(EQUAL, " ++ (go lhs) ++ ", " ++ (go rhs) ++ ")"
+            go (lhs :>: rhs) = "new_bin(IMPLIE, " ++ (go lhs) ++ ", " ++ (go rhs) ++ ")"
+            go (lhs :|: rhs) = "new_bin(OR, " ++ (go lhs) ++ ", " ++ (go rhs) ++ ")"
+            go (lhs :&: rhs) = "new_bin(AND, " ++ (go lhs) ++ ", " ++ (go rhs) ++ ")"
+            go (Neg  p) = "new_neg(" ++ (go p) ++ ")"
+            go (Stmnt (v,c)) = "STM(" ++ show (v + 23 * c) ++ ")"
