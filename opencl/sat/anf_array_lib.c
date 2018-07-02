@@ -22,8 +22,8 @@ ANF_Array* empty_anf_array (void) {
 ANF_BitString* new_bitstring (void) {
     ANF_BitString *bs = (ANF_BitString *) malloc(sizeof(ANF_BitString));
     
-    array_new(&bs->bstring, 128, char);
-    for (int i = 0; i < 128; i++) {
+    array_new(&bs->bstring, BS_SIZE, char);
+    for (int i = 0; i < BS_SIZE; i++) {
         index(bs->bstring, i, char) = 0;
     }
     bs->bits_on = 0;
@@ -46,11 +46,7 @@ ANF_Array* one (void) {
 }
 
 ANF_Array* zero (void) {
-    ANF_Array *z = new_anf_array();
-    
-    for (int i = 0; i < 128; i++) {
-        get_bs_comp(z, 0, i) = -1;
-    }
+    ANF_Array *z = empty_anf_array();
 
     return z;
 }
@@ -91,9 +87,41 @@ void array_add_xor (Array *array, ANF_BitString *bs) {
     index(array, array->size++, ANF_BitString*) = bs;
 }
 
+void shift_left_from (Array *array, int i) {
+    while (i < array->size - 1) {
+        index(array, i, ANF_BitString *) = index(array, i+1, ANF_BitString *);
+        i++;
+    }
+}
+
+int array_rm_bs (Array *array, ANF_BitString *bs) {
+    for (int i = 0; i < array->size; i++) {
+        switch (compare_bs(array_get_xor(array, i), bs)) {
+            case EQ:
+                array_free(array_get_xor(array, i)->bstring);
+                free(array_get_xor(array, i));
+                shift_left_from(array, i);
+                array->size--;
+                return 1;
+        }
+    }
+    return 0;
+}
+
 void add_xor_comp (ANF_Array *p, ANF_BitString *bs) {
     array_add_xor(p->xors, bs);
     p->components++;
+}
+
+void add_xor_comp_envious (ANF_Array *p, ANF_BitString *bs) {
+    if (array_rm_bs(p->xors, bs)) {
+        array_free(bs->bstring);
+        free(bs);
+        p->components--;
+    } else {
+        array_add_xor(p->xors, bs);
+        p->components++;
+    }
 }
 
 Ordering compare_bs (ANF_BitString *x, ANF_BitString *y) {
@@ -102,10 +130,10 @@ Ordering compare_bs (ANF_BitString *x, ANF_BitString *y) {
     } else if (x->bits_on > y->bits_on) {
         return GT;
     } else {
-        if (index(x->bstring, 0, char) == -1  &&
-            index(y->bstring, 0, char) == -1) { return EQ; }
-        if (index(x->bstring, 0, char) == -1) { return LT; }
-        if (index(y->bstring, 0, char) == -1) { return GT; }
+        // if (index(x->bstring, 0, char) == -1  &&
+        //     index(y->bstring, 0, char) == -1) { return EQ; }
+        // if (index(x->bstring, 0, char) == -1) { return LT; }
+        // if (index(y->bstring, 0, char) == -1) { return GT; }
         if (x->bits_on == 0) { return EQ; }
 
         for (int i = 0; i < x->bstring->size; i++) {
@@ -209,7 +237,7 @@ void print_bs (ANF_BitString *bs) {
     } else {
         for (int j = 0; j < bs->bstring->size; j++) {
             if (index(bs->bstring, j, char) != 0)
-                printf("%c", j);
+                printf("(%d)", j);
         }        
     }
 }
@@ -217,6 +245,8 @@ void print_bs (ANF_BitString *bs) {
 void print_anf_array (ANF_Array *p) {
     int i = 0;
     ANF_BitString *current_bs = NULL;
+
+    if (p->components == 0) { printf("0"); }
 
     while (i < p->components) {
         print_bs(get_anf_bs(p, i++));

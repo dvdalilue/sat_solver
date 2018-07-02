@@ -10,6 +10,8 @@
 #include "array.h"
 #include "proposition.h"
 
+#define BS_SIZE 128
+
 #define dig_anf_bs(anf, i) index(anf->xors, i, ANF_BitString *)
 #define get_bs_comp(anf, i, j) index(dig_anf_bs(anf, i)->bstring, j, char)
 
@@ -36,6 +38,7 @@ Ordering compare_bs (ANF_BitString *x, ANF_BitString *y);
 ANF_BitString* copy_bs (ANF_BitString *bs);
 void merge_sort_anf (ANF_Array *p);
 void add_xor_comp (ANF_Array *p, ANF_BitString *bs);
+void add_xor_comp_envious (ANF_Array *p, ANF_BitString *bs);
 void free_anf_array (ANF_Array *p);
 void free_anf_array_deep (ANF_Array *p);
 void print_anf_array (ANF_Array *p);

@@ -42,7 +42,7 @@ ANF_Array* map_anf_bs (ANF_BitString *bs, ANF_Array *p) {
     ANF_Array *maped = empty_anf_array();
 
     for (int i = 0; i < p->xors->size; i++) {
-        add_xor_comp(maped, and_bs(get_anf_bs(p, i), bs));
+        add_xor_comp_envious(maped, and_bs(get_anf_bs(p, i), bs));
     }
 
     return maped;
