@@ -20,8 +20,8 @@ static block_kernel_pair pair_map[1] = {
 static block_kernel_map bmap = { 0, 1, initBlocks, pair_map };
 
 // Block function
-void (^square_kernel)(const cl_ndrange *ndrange, cl_float* input, cl_float* output) =
-^(const cl_ndrange *ndrange, cl_float* input, cl_float* output) {
+void (^and_bs_gpu_kernel)(const cl_ndrange *ndrange, cl_char* bs_x, cl_char* bs_y, cl_char* bs_out) =
+^(const cl_ndrange *ndrange, cl_char* bs_x, cl_char* bs_y, cl_char* bs_out) {
   int err = 0;
   cl_kernel k = bmap.map[0].kernel;
   if (!k) {
@@ -29,14 +29,15 @@ void (^square_kernel)(const cl_ndrange *ndrange, cl_float* input, cl_float* outp
     k = bmap.map[0].kernel;
   }
   if (!k)
-    gcl_log_fatal("kernel square does not exist for device");
+    gcl_log_fatal("kernel and_bs_gpu does not exist for device");
   kargs_struct kargs;
   gclCreateArgsAPPLE(k, &kargs);
-  err |= gclSetKernelArgMemAPPLE(k, 0, input, &kargs);
-  err |= gclSetKernelArgMemAPPLE(k, 1, output, &kargs);
-  gcl_log_cl_fatal(err, "setting argument for square failed");
+  err |= gclSetKernelArgMemAPPLE(k, 0, bs_x, &kargs);
+  err |= gclSetKernelArgMemAPPLE(k, 1, bs_y, &kargs);
+  err |= gclSetKernelArgMemAPPLE(k, 2, bs_out, &kargs);
+  gcl_log_cl_fatal(err, "setting argument for and_bs_gpu failed");
   err = gclExecKernelAPPLE(k, ndrange, &kargs);
-  gcl_log_cl_fatal(err, "Executing square failed");
+  gcl_log_cl_fatal(err, "Executing and_bs_gpu failed");
   gclDeleteArgsAPPLE(k, &kargs);
 };
 
@@ -47,8 +48,8 @@ static void initBlocks(void) {
   dispatch_once(&once,
     ^{ int err = gclBuildProgramBinaryAPPLE("OpenCL/kernel.cl", "", &bmap, build_opts);
        if (!err) {
-          assert(bmap.map[0].block_ptr == square_kernel && "mismatch block");
-          bmap.map[0].kernel = clCreateKernel(bmap.program, "square", &err);
+          assert(bmap.map[0].block_ptr == and_bs_gpu_kernel && "mismatch block");
+          bmap.map[0].kernel = clCreateKernel(bmap.program, "and_bs_gpu", &err);
        }
      });
 }
@@ -56,6 +57,6 @@ static void initBlocks(void) {
 __attribute__((constructor))
 static void RegisterMap(void) {
   gclRegisterBlockKernelMap(&bmap);
-  bmap.map[0].block_ptr = square_kernel;
+  bmap.map[0].block_ptr = and_bs_gpu_kernel;
 }
 
