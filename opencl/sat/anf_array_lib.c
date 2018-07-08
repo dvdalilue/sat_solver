@@ -130,10 +130,6 @@ Ordering compare_bs (ANF_BitString *x, ANF_BitString *y) {
     } else if (x->bits_on > y->bits_on) {
         return GT;
     } else {
-        // if (index(x->bstring, 0, char) == -1  &&
-        //     index(y->bstring, 0, char) == -1) { return EQ; }
-        // if (index(x->bstring, 0, char) == -1) { return LT; }
-        // if (index(y->bstring, 0, char) == -1) { return GT; }
         if (x->bits_on == 0) { return EQ; }
 
         for (int i = 0; i < x->bstring->size; i++) {
@@ -159,7 +155,7 @@ ANF_BitString* copy_bs (ANF_BitString *bs) {
         index(cp_bs->bstring, i, char) = index(bs->bstring, i, char);
     }
 
-    cp_bs->bits_on = bs->bits_on;   
+    cp_bs->bits_on = bs->bits_on;
 
     return cp_bs;
 }
@@ -244,7 +240,6 @@ void print_bs (ANF_BitString *bs) {
 
 void print_anf_array (ANF_Array *p) {
     int i = 0;
-    ANF_BitString *current_bs = NULL;
 
     if (p->components == 0) { printf("0"); }
 
