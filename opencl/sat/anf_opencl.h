@@ -30,12 +30,6 @@ Ordering compare_bs (char *x, char *y, int bits_x, int bits_y);
 void merge_sort_anf (ANF_OpenCL *p);
 void free_anf_opencl (ANF_OpenCL *p);
 void print_anf_opencl (ANF_OpenCL *p);
-void print_bs (char *bs);
-
-//char* copy_bs (char *bs);
-
-//void free_anf_array (ANF_OpenCL *p);
-//void free_anf_array_deep (ANF_OpenCL *p);
-
+void print_bs (char *bs, int bits_on);
 
 #endif /* ANF_OpenCL */

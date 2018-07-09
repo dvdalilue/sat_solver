@@ -220,18 +220,21 @@ void free_anf_opencl (ANF_OpenCL *p) {
 
 void print_anf_opencl (ANF_OpenCL *p) {
     for (int k = 0; k < p->monomials; k++) {
-        print_bs(get_anf_bs(p, k));
+        print_bs(get_anf_bs(p, p->order[k]), p->bits_on[p->order[k]]);
 
         if (k < p->monomials - 1) {
             printf(" xor ");
         }
     }
+
+    if (p->monomials == 0) { printf("0"); }
     printf("\n");
 }
 
-void print_bs (char *bs) {
+void print_bs (char *bs, int bits_on) {
     for (int i = 0; i < BS_SIZE; i++) {
         if (bs[i] == 1)
             printf("%c", i);
     }
+    if (bits_on == 0) printf("1");
 }
