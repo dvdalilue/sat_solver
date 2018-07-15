@@ -1,7 +1,7 @@
 CC=gcc
-CFLAGS=-O3
-DEPS = proposition.h stack.h cnf.h nnf.h anf_lib.h anf.h anf_rpn.h anf_opencl.h anf_op.h array.h
-OBJ = main.o proposition.o stack.o cnf.o nnf.o anf_lib.o anf.o anf_rpn.o anf_opencl.o anf_op.o array.o
+CFLAGS=-O3 -l OpenCL
+DEPS = proposition.h stack.h cnf.h nnf.h anf_op_lib.h anf_op.h anf_gpu.h
+OBJ = main.o proposition.o stack.o cnf.o nnf.o anf_op_lib.o anf_op.o anf_gpu.o
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)

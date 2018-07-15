@@ -7,6 +7,8 @@
 
 #include "proposition.h"
 #include "anf_op_lib.h"
+#include "anf_gpu.h"
+
 
 ANF* xor_anf_op (ANF *p, ANF *q);
 ANF* and_anf_op (ANF *p, ANF *q);
