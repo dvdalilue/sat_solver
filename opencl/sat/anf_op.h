@@ -6,9 +6,9 @@
 //
 
 #include "proposition.h"
-#include "anf_opencl.h"
+#include "anf_op_lib.h"
 
-ANF_OpenCL* xor_anf_op (ANF_OpenCL *p, ANF_OpenCL *q);
-ANF_OpenCL* and_anf_op (ANF_OpenCL *p, ANF_OpenCL *q);
-ANF_OpenCL* map_anf_bs (char *bs, ANF_OpenCL *p);
-ANF_OpenCL* anf_op (Proposition *p);
+ANF* xor_anf_op (ANF *p, ANF *q);
+ANF* and_anf_op (ANF *p, ANF *q);
+ANF* map_anf_bs (char *bs, ANF *p);
+ANF* anf_op (Proposition *p);

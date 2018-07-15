@@ -11,8 +11,8 @@
 
 char* and_bs (char *x, char *y, int *bits_on);
 
-ANF_OpenCL* xor_anf_op (ANF_OpenCL *p, ANF_OpenCL *q) {
-    ANF_OpenCL *merge = empty_anf();
+ANF* xor_anf_op (ANF *p, ANF *q) {
+    ANF *merge = empty_anf();
 
     int i = 0,
         j = 0;
@@ -50,8 +50,8 @@ ANF_OpenCL* xor_anf_op (ANF_OpenCL *p, ANF_OpenCL *q) {
     return merge;
 }
 
-ANF_OpenCL* map_anf_bs (char *bs, ANF_OpenCL *p) {
-    ANF_OpenCL *result = empty_anf();
+ANF* map_anf_bs (char *bs, ANF *p) {
+    ANF *result = empty_anf();
     char *aux = NULL;
     int bts;
 
@@ -75,13 +75,13 @@ char* and_bs (char *x, char *y, int *bits_on) {
     return result;
 }
 
-ANF_OpenCL* and_anf_op (ANF_OpenCL *p, ANF_OpenCL *q) {
+ANF* and_anf_op (ANF *p, ANF *q) {
     if (p->monomials == 0 || q->monomials == 0)
         return empty_anf();
 
-    ANF_OpenCL *result = map_anf_bs(get_anf_bs(p, 0), q);
-    ANF_OpenCL *prev = NULL;
-    ANF_OpenCL *maped = NULL;
+    ANF *result = map_anf_bs(get_anf_bs(p, 0), q);
+    ANF *prev = NULL;
+    ANF *maped = NULL;
 
     for (int i = 1; i < p->monomials; i++) {
         prev = result;
@@ -95,8 +95,8 @@ ANF_OpenCL* and_anf_op (ANF_OpenCL *p, ANF_OpenCL *q) {
     return result;
 }
 
-ANF_OpenCL* or_to_xor_op (ANF_OpenCL *lhs, ANF_OpenCL *rhs) {
-    ANF_OpenCL *result = NULL,
+ANF* or_to_xor_op (ANF *lhs, ANF *rhs) {
+    ANF *result = NULL,
                *tmp = NULL;
 
     tmp = and_anf_op(lhs, rhs);
@@ -109,8 +109,8 @@ ANF_OpenCL* or_to_xor_op (ANF_OpenCL *lhs, ANF_OpenCL *rhs) {
     return result;
 }
 
-ANF_OpenCL* implie_to_xor_op (ANF_OpenCL *lhs, ANF_OpenCL *rhs) {
-    ANF_OpenCL *result = NULL,
+ANF* implie_to_xor_op (ANF *lhs, ANF *rhs) {
+    ANF *result = NULL,
               *tmp = NULL,
               *local_one = one();
 
@@ -125,8 +125,8 @@ ANF_OpenCL* implie_to_xor_op (ANF_OpenCL *lhs, ANF_OpenCL *rhs) {
     return result;
 }
 
-ANF_OpenCL* eq_to_xor_op (ANF_OpenCL *lhs, ANF_OpenCL *rhs) {
-    ANF_OpenCL *result = NULL,
+ANF* eq_to_xor_op (ANF *lhs, ANF *rhs) {
+    ANF *result = NULL,
               *aux = NULL,
               *tmp_l = NULL,
               *tmp_r = NULL,
@@ -154,10 +154,10 @@ ANF_OpenCL* eq_to_xor_op (ANF_OpenCL *lhs, ANF_OpenCL *rhs) {
     return result;
 }
 
-ANF_OpenCL* anf_op (Proposition *p) {
-    ANF_OpenCL *lhs_anf = NULL;
-    ANF_OpenCL *rhs_anf = NULL;
-    ANF_OpenCL *result = NULL;
+ANF* anf_op (Proposition *p) {
+    ANF *lhs_anf = NULL;
+    ANF *rhs_anf = NULL;
+    ANF *result = NULL;
 
     switch (p->kind) {
         case 0: // Statement
