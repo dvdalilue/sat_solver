@@ -12,7 +12,7 @@
 
 char* new_bitstring (void) {
     char *bs = (char *) malloc(sizeof(char) * BS_SIZE);
-    
+
     for (int i = 0; i < BS_SIZE; i++) { bs[i] = 0; }
 
     return bs;
@@ -30,9 +30,9 @@ void anf_init (ANF *polynomial, int capacity) {
 
 ANF* empty_anf (void) {
     ANF *result = (ANF *) malloc(sizeof(ANF));
-    
+
     int capacity = 7;
-    
+
     result->capacity = capacity;
     result->monomials = 0;
     result->bits_on = (int *) malloc(sizeof(int) * capacity);
@@ -46,7 +46,7 @@ ANF* empty_anf (void) {
 
 ANF* one (void) {
     ANF *result = empty_anf();
-    
+
     result->monomials = 1;
     result->order[0] = 0;
 
@@ -55,12 +55,12 @@ ANF* one (void) {
 
 ANF* new_poly (int var) {
     ANF *poly = empty_anf();
-    
+
     poly->monomials = 1;
     poly->bstring[var] = 1;
     poly->bits_on[0] = 1;
     poly->order[0] = 0;
-    
+
     return poly;
 }
 
@@ -72,7 +72,7 @@ void array_double_capacity_if_full (ANF *p) {
         p->bstring = (char *) realloc(p->bstring,
                                       sizeof(char) * p->capacity * BS_SIZE);
     }
-    
+
     anf_init(p, p->capacity);
 }
 
@@ -141,11 +141,11 @@ char* get_anf_bs (ANF *anf, int i) {
 }
 
 Ordering compare_bs (char *x, char *y, int bits_x, int bits_y) {
-    if (bits_x < bits_y) {
-        return LT;
-    } else if (bits_x > bits_y) {
-        return GT;
-    } else if (bits_x != 0) {
+    // if (bits_x < bits_y) {
+    //     return LT;
+    // } else if (bits_x > bits_y) {
+    //     return GT;
+    // } else if (bits_x != 0) {
         for (int i = 0; i < BS_SIZE; i++) {
             if (x[i] == 1 && y[i] == 0) {
                 return LT;
@@ -153,7 +153,7 @@ Ordering compare_bs (char *x, char *y, int bits_x, int bits_y) {
                 return GT;
             }
         }
-    }
+    // }
 
     return EQ;
 }
@@ -190,10 +190,10 @@ void merge (ANF *p, int a, int b, int c) {
                 break;
         }
     }
-    
+
     while (i < n_ls) p->order[k++] = left[i++];
     while (j < n_rs) p->order[k++] = right[j++];
-    
+
     free(left);
     free(right);
 }

@@ -20,7 +20,7 @@ cl_program program = NULL;
 static void print_device_info(cl_device_id device) {
     char name[128];
     char vendor[128];
-    
+
     clGetDeviceInfo(device, CL_DEVICE_NAME, 128, name, NULL);
     clGetDeviceInfo(device, CL_DEVICE_VENDOR, 128, vendor, NULL);
 
