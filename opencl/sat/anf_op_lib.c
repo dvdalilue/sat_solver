@@ -23,7 +23,6 @@ void anf_init (ANF *polynomial, int capacity) {
         for (int j = 0; j < BS_SIZE; j++) {
             polynomial->bstring[j + i * BS_SIZE] = 0;
         }
-        polynomial->bits_on[i] = 0;
         polynomial->order[i] = -1;
     }
 }
@@ -35,7 +34,6 @@ ANF* empty_anf (void) {
 
     result->capacity = capacity;
     result->monomials = 0;
-    result->bits_on = (int *) malloc(sizeof(int) * capacity);
     result->order = (int *) malloc(sizeof(int) * capacity);
     result->bstring = (char *) malloc(sizeof(char) * capacity * BS_SIZE);
 
@@ -58,7 +56,6 @@ ANF* new_poly (int var) {
 
     poly->monomials = 1;
     poly->bstring[var] = 1;
-    poly->bits_on[0] = 1;
     poly->order[0] = 0;
 
     return poly;
@@ -67,7 +64,6 @@ ANF* new_poly (int var) {
 void array_double_capacity_if_full (ANF *p) {
     if (p->monomials >= p->capacity) {
         p->capacity *= 2;
-        p->bits_on = (int *) realloc(p->bits_on, sizeof(int) * p->capacity);
         p->order = (int *) realloc(p->order, sizeof(int) * p->capacity);
         p->bstring = (char *) realloc(p->bstring,
                                       sizeof(char) * p->capacity * BS_SIZE);
@@ -76,19 +72,16 @@ void array_double_capacity_if_full (ANF *p) {
     anf_init(p, p->capacity);
 }
 
-void add_xor_comp (ANF *p, char *bs, int bits_on) {
+void add_xor_comp (ANF *p, char *bs) {
     int i = p->monomials * BS_SIZE,
-    j = 0,
-    bit_counter = 0;
+        j = 0;
 
     array_double_capacity_if_full(p);
 
-    while (bit_counter < bits_on && j < BS_SIZE) {
-        p->bstring[i++] = bs[j];
-        if (bs[j++] == 1) bit_counter++;
+    while (j < BS_SIZE) {
+        p->bstring[i++] = bs[j++];
     }
     p->order[p->monomials] = p->monomials;
-    p->bits_on[p->monomials] = bits_on;
     p->monomials++;
 }
 
@@ -111,16 +104,12 @@ void shift_left_from (ANF *p, int from) {
         for (int j = 0; j < BS_SIZE; j++) {
             left[j] = right[j];
         }
-
-        p->bits_on[i] = p->bits_on[i + 1];
     }
-
-    p->bits_on[p->monomials - 1] = 0;
 }
 
-int rm_bs (ANF *p, char *bs, int bits_on) {
+int rm_bs (ANF *p, char *bs) {
     for (int i = 0; i < p->monomials; i++) {
-        switch (compare_bs(get_anf_bs(p, p->order[i]), bs, p->bits_on[p->order[i]], bits_on)) {
+        switch (compare_bs(get_anf_bs(p, p->order[i]), bs)) {
             case EQ:
                 shift_left_from(p, i);
                 p->monomials--;
@@ -130,9 +119,9 @@ int rm_bs (ANF *p, char *bs, int bits_on) {
     return 0;
 }
 
-void add_xor_comp_envious (ANF *p, char *bs, int bits_on) {
-    if (!rm_bs(p, bs, bits_on)) {
-        add_xor_comp(p, bs, bits_on);
+void add_xor_comp_envious (ANF *p, char *bs) {
+    if (!rm_bs(p, bs)) {
+        add_xor_comp(p, bs);
     }
 }
 
@@ -140,20 +129,14 @@ char* get_anf_bs (ANF *anf, int i) {
     return (anf->bstring + i * BS_SIZE);
 }
 
-Ordering compare_bs (char *x, char *y, int bits_x, int bits_y) {
-    // if (bits_x < bits_y) {
-    //     return LT;
-    // } else if (bits_x > bits_y) {
-    //     return GT;
-    // } else if (bits_x != 0) {
-        for (int i = 0; i < BS_SIZE; i++) {
-            if (x[i] == 1 && y[i] == 0) {
-                return LT;
-            } else if (x[i] == 0 && y[i] == 1) {
-                return GT;
-            }
+Ordering compare_bs (char *x, char *y) {
+    for (int i = 0; i < BS_SIZE; i++) {
+        if (x[i] == 1 && y[i] == 0) {
+            return LT;
+        } else if (x[i] == 0 && y[i] == 1) {
+            return GT;
         }
-    // }
+    }
 
     return EQ;
 }
@@ -176,11 +159,8 @@ void merge (ANF *p, int a, int b, int c) {
     k = a;
 
     while (i < n_ls && j < n_rs) {
-        switch (compare_bs(
-                           get_anf_bs(p, left[i]),
-                           get_anf_bs(p, right[j]),
-                           p->bits_on[left[i]],
-                           p->bits_on[right[j]])) {
+        switch (compare_bs(get_anf_bs(p, left[i]),
+                           get_anf_bs(p, right[j]))) {
             case LT:
             case EQ:
                 p->order[k++] = left[i++];
@@ -212,7 +192,6 @@ void merge_sort_anf (ANF *p) {
 }
 
 void free_anf_opencl (ANF *p) {
-    free(p->bits_on);
     free(p->order);
     free(p->bstring);
     free(p);
@@ -220,7 +199,7 @@ void free_anf_opencl (ANF *p) {
 
 void print_anf_opencl (ANF *p) {
     for (int k = 0; k < p->monomials; k++) {
-        print_bs(get_anf_bs(p, p->order[k]), p->bits_on[p->order[k]]);
+        print_bs(get_anf_bs(p, p->order[k]));
 
         if (k < p->monomials - 1) {
             printf(" xor ");
@@ -231,10 +210,14 @@ void print_anf_opencl (ANF *p) {
     printf("\n");
 }
 
-void print_bs (char *bs, int bits_on) {
+void print_bs (char *bs) {
+    int bit_counter = 0;
+
     for (int i = 0; i < BS_SIZE; i++) {
-        if (bs[i] == 1)
-            printf("%c", i);
+        if (bs[i] == 1) {
+            printf("(%d)", i);
+            bit_counter++;
+        }
     }
-    if (bits_on == 0) printf("1");
+    if (bit_counter == 0) printf("1");
 }

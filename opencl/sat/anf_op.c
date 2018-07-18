@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include "anf_op.h"
 
-char* and_bs (char *x, char *y, int *bits_on);
+char* and_bs (char *x, char *y);
 
 ANF* xor_anf_op (ANF *p, ANF *q) {
     ANF *merge = empty_anf();
@@ -18,32 +18,29 @@ ANF* xor_anf_op (ANF *p, ANF *q) {
         j = 0;
 
     while (i < p->monomials && j < q->monomials) {
-        switch (compare_bs(
-                            get_anf_bs(p, p->order[i]),
-                            get_anf_bs(q, q->order[j]),
-                            p->bits_on[p->order[i]],
-                            q->bits_on[q->order[j]])) {
+        switch (compare_bs(get_anf_bs(p, p->order[i]),
+                           get_anf_bs(q, q->order[j]))) {
             case EQ:
                 i++; j++;
                 break;
             case LT:
-                add_xor_comp(merge, get_anf_bs(p, p->order[i]), p->bits_on[p->order[i]]);
+                add_xor_comp(merge, get_anf_bs(p, p->order[i]));
                 i++;
                 break;
             case GT:
-                add_xor_comp(merge, get_anf_bs(q, q->order[j]), q->bits_on[q->order[j]]);
+                add_xor_comp(merge, get_anf_bs(q, q->order[j]));
                 j++;
                 break;
         }
     }
 
     while (i < p->monomials) {
-        add_xor_comp(merge, get_anf_bs(p, p->order[i]), p->bits_on[p->order[i]]);
+        add_xor_comp(merge, get_anf_bs(p, p->order[i]));
         i++;
     }
 
     while (j < q->monomials) {
-        add_xor_comp(merge, get_anf_bs(q, q->order[j]), q->bits_on[q->order[j]]);
+        add_xor_comp(merge, get_anf_bs(q, q->order[j]));
         j++;
     }
 
@@ -53,23 +50,21 @@ ANF* xor_anf_op (ANF *p, ANF *q) {
 ANF* map_anf_bs (char *bs, ANF *p) {
     ANF *result = empty_anf();
     char *aux = NULL;
-    int bts;
 
     for (int i = 0; i < p->monomials; i++) {
-        bts = 0;
-        aux = and_bs(get_anf_bs(p, i), bs, &bts);
-        add_xor_comp_envious(result, aux, bts);
+        aux = and_bs(get_anf_bs(p, i), bs);
+        add_xor_comp_envious(result, aux);
         free(aux);
     }
 
     return result;
 }
 
-char* and_bs (char *x, char *y, int *bits_on) {
+char* and_bs (char *x, char *y) {
     char *result = (char *) malloc(sizeof(char) * BS_SIZE);
 
     for (int i = 0; i < BS_SIZE; i++) {
-        if (result[i] = x[i] | y[i]) (*bits_on)++;
+        result[i] = x[i] | y[i];
     }
 
     return result;
@@ -79,13 +74,14 @@ ANF* and_anf_op (ANF *p, ANF *q) {
     if (p->monomials == 0 || q->monomials == 0)
         return empty_anf();
 
-    ANF *result = map_anf_bs(get_anf_bs(p, 0), q);
+    ANF *result = map_bs_gpu(get_anf_bs(p, 0), q);
+    merge_sort_anf(result);
     ANF *prev = NULL;
     ANF *maped = NULL;
 
     for (int i = 1; i < p->monomials; i++) {
         prev = result;
-        maped = map_anf_bs(get_anf_bs(p, i), q);
+        maped = map_bs_gpu(get_anf_bs(p, i), q);
         merge_sort_anf(maped);
         result = xor_anf_op(prev, maped);
         free_anf_opencl(maped);
