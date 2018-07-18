@@ -11,6 +11,9 @@
 #include <CL/cl.h>
 #endif
 
-// void and_bs_gpu(dispatch_queue_t queue, char *x, char *y, int length, char *result);
+#include "anf_op_lib.h"
+
+ANF* map_bs_gpu (char *bs, ANF *p);
+void releaseAll (void);
 
 int first_test(void);

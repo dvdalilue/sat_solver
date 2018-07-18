@@ -37,7 +37,7 @@ cl_device_id get_device_id (cl_int *ret) {
     cl_uint ret_num_platforms;
 
     (*ret) = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
-    (*ret) = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1, 
+    (*ret) = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1,
             &device_id, &ret_num_devices);
 
     return device_id;
@@ -80,7 +80,7 @@ cl_program load_program (const char *file_path, cl_context context, cl_int *ret)
     fclose(fp);
 
     // Create a program from the kernel source
-    program = clCreateProgramWithSource(context, 1, 
+    program = clCreateProgramWithSource(context, 1,
             (const char **) &source_str, (const size_t *) &source_size, ret);
 
     // Build the program
@@ -117,6 +117,78 @@ cl_program load_program (const char *file_path, cl_context context, cl_int *ret)
     }
 
     return program;
+}
+
+ANF* bstringToANF (char *bstring, int monomials) {
+    ANF *result = empty_anf();
+
+    for (int i = 0; i < monomials; i++) {
+        add_xor_comp_envious(result, (bstring + i * BS_SIZE));
+    }
+
+    free(bstring);
+
+    return result;
+}
+
+ANF* map_bs_gpu (char *bs, ANF *p) {
+    cl_int ret;
+    // Get device information
+    device_id = get_device_id(&ret);
+    // Create an OpenCL context
+    context = get_context(device_id, &ret);
+    // Create a command queue
+    command_queue = get_command_queue(context, device_id, &ret);
+
+    // Create memory buffers on the device for each vector
+    cl_mem gpu_bs = clCreateBuffer(context, CL_MEM_READ_ONLY,
+            BS_SIZE * sizeof(char), NULL, &ret);
+    cl_mem gpu_poly = clCreateBuffer(context, CL_MEM_READ_WRITE,
+            p->monomials * sizeof(char) * BS_SIZE, NULL, &ret);
+
+    // Copy order and bit string to their respective memory buffers
+    ret = clEnqueueWriteBuffer(command_queue, gpu_bs, CL_TRUE, 0,
+            BS_SIZE * sizeof(char), bs, 0, NULL, NULL);
+    ret = clEnqueueWriteBuffer(command_queue, gpu_poly, CL_TRUE, 0,
+            p->monomials * sizeof(char) * BS_SIZE, p->bstring, 0, NULL, NULL);
+
+    // Create a program from the kernel source
+    program = load_program("kernel.cl", context, &ret);
+
+    // Create the OpenCL kernel
+    cl_kernel kernel = clCreateKernel(program, "map_anf_gpu", &ret);
+
+    // Set the arguments of the kernel
+    ret = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *) &gpu_bs);
+    ret = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *) &gpu_poly);
+
+    // Execute the OpenCL kernel on the list
+    size_t global_item_size = p->monomials; // Process the entire polynomial
+    ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL,
+            &global_item_size, NULL, 0, NULL, NULL);
+
+    // Read the memory buffer gpu_poly on the device to the local variable poly
+    char *anf_p = (char *) malloc(sizeof(char) * p->monomials * BS_SIZE);
+
+    ret = clEnqueueReadBuffer(command_queue, gpu_poly, CL_TRUE, 0,
+            p->monomials * sizeof(char) * BS_SIZE, anf_p, 0, NULL, NULL);
+
+    // Clean up
+    ret = clFlush(command_queue);
+    ret = clFinish(command_queue);
+    ret = clReleaseKernel(kernel);
+    ret = clReleaseMemObject(gpu_bs);
+    ret = clReleaseMemObject(gpu_poly);
+
+    return bstringToANF(anf_p, p->monomials);
+}
+
+void releaseAll (void) {
+    cl_int ret;
+
+    ret = clReleaseContext(context);
+    ret = clReleaseProgram(program);
+    ret = clReleaseCommandQueue(command_queue);
 }
 
 int first_test(void) {
