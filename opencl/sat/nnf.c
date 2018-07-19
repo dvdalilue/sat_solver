@@ -9,6 +9,13 @@
 #include <stdlib.h>
 #include "nnf.h"
 
+/*
+ * Implication elimination from a proposition following the
+ * theorem 'P -> Q == Neg P Or Q'. Going recursively through
+ * the propostion and changing when needed. In case of
+ * equivalence, a conjunction of implications (both directions)
+ * is used and replacing them with the previous theorem.
+ */
 Proposition* impl_free (Proposition *p) {
     switch (p->kind) {
         case 0:
@@ -39,34 +46,39 @@ Proposition* impl_free (Proposition *p) {
     return NULL; // This should never happend
 }
 
+/*
+ * Takes a proposition and removes double negation while
+ * apllying the DeMorgan's theorems
+ */
 Proposition* nnf_aux (Proposition *p) {
     Proposition *current = p;
     Proposition *result = current;
-    
+
     switch (current->kind) {
         case 1:
             switch (desneg(current)->kind) {
-                case 1:
+                case 1: // Neg Neg P == P
                     result = nnf_aux(desneg(desneg(current)));
                     free_neg(desneg(current));
                     free_neg(current);
                     break;
                 case 2:
                     switch (op(desneg(current))) {
-                        case AND:
+                        case AND: // Neg (P And Q) == Neg P Or Neg Q
                             result = new_bin(OR,
                                         nnf_aux(new_neg(lhs(desneg(current)))),
                                         nnf_aux(new_neg(rhs(desneg(current)))));
                             break;
-                        case OR:
+                        case OR: // Neg (P Or Q) == Neg P And Neg Q
                             result = new_bin(AND,
                                         nnf_aux(new_neg(lhs(desneg(current)))),
                                         nnf_aux(new_neg(rhs(desneg(current)))));
                             break;
                         default:
-                            result = new_bin(op(desneg(current)),
-                                        nnf_aux(lhs(desneg(current))),
-                                        nnf_aux(rhs(desneg(current))));
+                            result = new_neg(
+                                        new_bin(op(desneg(current)),
+                                            nnf_aux(lhs(desneg(current))),
+                                            nnf_aux(rhs(desneg(current)))));
                             break;
                     }
                     free_bin(desneg(current));
@@ -84,7 +96,10 @@ Proposition* nnf_aux (Proposition *p) {
     return result;
 }
 
-
+/*
+ * In order to have a proposition in NNF, it should be without
+ * implications before.
+ */
 Proposition* nnf (Proposition *p) {
     return nnf_aux(impl_free(p));
 }

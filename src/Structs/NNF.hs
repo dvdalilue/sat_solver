@@ -21,7 +21,7 @@ import Structs.Essentials.Helper
 -- | A propposition manipulator that takes a proposition and, going recursively
 -- to the leaf statements, change the implication data constructors following
 -- the next theorem.
--- 
+--
 -- > (p :>: q) == (Neg p) :|: q.
 --
 -- Returning the equivalent proposition without implications.
@@ -37,7 +37,7 @@ impl_free   (p :>: q) = (Neg (impl_free p)) :|: (impl_free q)
 -- | A variation of 'impl_free' which in this case takes a proposition, a
 -- polymorphic list (accumulator), goes recursively to the leaf statements and
 -- follows the same theorem.
--- 
+--
 -- Returning a 2-tuple with the first element of type [a] and the second
 -- one being the proposition without implications.
 
