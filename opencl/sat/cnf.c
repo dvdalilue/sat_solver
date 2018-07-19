@@ -8,6 +8,13 @@
 #include <stdlib.h>
 #include "cnf.h"
 
+/*
+ * Apply the distributive property 'OR over AND', assuming that
+ * the given propositions 'p' and 'q' correspond to the left
+ * and right side, respectevily, of a binary operation 'OR'. If
+ * 'p' or 'q' does not match with the binary operation 'AND',
+ * an 'OR' is constructed.
+ */
 Proposition* distr_cnf (Proposition *p, Proposition *q) {
     Proposition *result = NULL;
     Proposition *lhs_and = NULL,
@@ -34,6 +41,11 @@ Proposition* distr_cnf (Proposition *p, Proposition *q) {
     return result;
 }
 
+/*
+ * Goes recursively through the proposition and apply the
+ * distributive property when an 'OR' is found. Returning the
+ * CNF of the proposition.
+ */
 Proposition* cnf_aux (Proposition *p) {
     Proposition *result = p;
 
@@ -48,6 +60,10 @@ Proposition* cnf_aux (Proposition *p) {
     return result;
 }
 
+/*
+ * In order to have a proposition in CNF, it should be in NNF
+ * before.
+ */
 Proposition* cnf (Proposition *p) {
     return cnf_aux(nnf(p));
 }
