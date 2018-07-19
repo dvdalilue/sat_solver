@@ -27,8 +27,8 @@ void add_xor_comp_envious (ANF *p, char *bs);
 char* get_anf_bs (ANF *anf, int i);
 Ordering compare_bs (char *x, char *y);
 void merge_sort_anf (ANF *p);
-void free_anf_opencl (ANF *p);
-void print_anf_opencl (ANF *p);
+void free_anf (ANF *p);
+void print_anf (ANF *p);
 void print_bs (char *bs);
 
 #endif /* ANF */

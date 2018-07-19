@@ -10,6 +10,9 @@
 
 #include "anf_op_lib.h"
 
+/*
+ * Creates and initialize and new bit string of size 'BS_SIZE'
+ */
 char* new_bitstring (void) {
     char *bs = (char *) malloc(sizeof(char) * BS_SIZE);
 
@@ -18,6 +21,10 @@ char* new_bitstring (void) {
     return bs;
 }
 
+/*
+ * Initialize an ANF polynomial from the current free monomial
+ * space.
+ */
 void anf_init (ANF *polynomial, int capacity) {
     for (int i = polynomial->monomials; i < capacity; i++) {
         for (int j = 0; j < BS_SIZE; j++) {
@@ -27,6 +34,9 @@ void anf_init (ANF *polynomial, int capacity) {
     }
 }
 
+/*
+ * Creates a new polynomial with capacity of 7 monomials.
+ */
 ANF* empty_anf (void) {
     ANF *result = (ANF *) malloc(sizeof(ANF));
 
@@ -42,6 +52,9 @@ ANF* empty_anf (void) {
     return result;
 }
 
+/*
+ * Creates a polynomial with only one monomial representing 1.
+ */
 ANF* one (void) {
     ANF *result = empty_anf();
 
@@ -51,6 +64,10 @@ ANF* one (void) {
     return result;
 }
 
+/*
+ * Creates a polynomial turning on the bit 'var' in the first
+ * monomial.
+ */
 ANF* new_poly (int var) {
     ANF *poly = empty_anf();
 
@@ -61,6 +78,10 @@ ANF* new_poly (int var) {
     return poly;
 }
 
+/*
+ * Checks if the polynomial has filled its capacity with
+ * monomials and doubles it.
+ */
 void array_double_capacity_if_full (ANF *p) {
     if (p->monomials >= p->capacity) {
         p->capacity *= 2;
@@ -72,6 +93,9 @@ void array_double_capacity_if_full (ANF *p) {
     anf_init(p, p->capacity);
 }
 
+/*
+ * Adds a bit string to the polynomial
+ */
 void add_xor_comp (ANF *p, char *bs) {
     int i = p->monomials * BS_SIZE,
         j = 0;
@@ -81,10 +105,15 @@ void add_xor_comp (ANF *p, char *bs) {
     while (j < BS_SIZE) {
         p->bstring[i++] = bs[j++];
     }
+
     p->order[p->monomials] = p->monomials;
     p->monomials++;
 }
 
+/*
+ * Removes the monomial in the position 'from' by shifting left
+ * the bit strings and their corresponding order.
+ */
 void shift_left_from (ANF *p, int from) {
     char *left, *right;
 
@@ -107,6 +136,10 @@ void shift_left_from (ANF *p, int from) {
     }
 }
 
+/*
+ * Removes the first monomial in 'p' equal to 'bs'. Returning 1
+ * if it's removed, 0 otherwise.
+ */
 int rm_bs (ANF *p, char *bs) {
     for (int i = 0; i < p->monomials; i++) {
         switch (compare_bs(get_anf_bs(p, p->order[i]), bs)) {
@@ -119,16 +152,28 @@ int rm_bs (ANF *p, char *bs) {
     return 0;
 }
 
+/*
+ * Adds a monomial to the polynomial if it is not present,
+ * otherwise removing the first monomial equal to 'bs'.
+ */
 void add_xor_comp_envious (ANF *p, char *bs) {
     if (!rm_bs(p, bs)) {
         add_xor_comp(p, bs);
     }
 }
 
+/*
+ * Gets the memory pointer of the bit string in the position
+ * 'i' of the polynomial.
+ */
 char* get_anf_bs (ANF *anf, int i) {
     return (anf->bstring + i * BS_SIZE);
 }
 
+/*
+ * Compare two bit strings using lexical order. Returning 'LT'
+ * if x < y, 'GT' if x > y and 'EQ' if x == y.
+ */
 Ordering compare_bs (char *x, char *y) {
     for (int i = 0; i < BS_SIZE; i++) {
         if (x[i] == 1 && y[i] == 0) {
@@ -141,6 +186,9 @@ Ordering compare_bs (char *x, char *y) {
     return EQ;
 }
 
+/*
+ * Merge algorithm from MergeSort
+ */
 void merge (ANF *p, int a, int b, int c) {
     int n_ls = b - a + 1;
     int n_rs = c - b;
@@ -178,6 +226,9 @@ void merge (ANF *p, int a, int b, int c) {
     free(right);
 }
 
+/*
+ * Auxiliary MergeSort function
+ */
 void merge_sort_aux (ANF *p, int a, int c) {
     if (a < c) {
         int b = (a + c) / 2;
@@ -187,17 +238,26 @@ void merge_sort_aux (ANF *p, int a, int c) {
     }
 }
 
+/*
+ * MergeSort for ANF
+ */
 void merge_sort_anf (ANF *p) {
     merge_sort_aux(p, 0, p->monomials - 1);
 }
 
-void free_anf_opencl (ANF *p) {
+/*
+ * Free the memory used by a polynomial ANF
+ */
+void free_anf (ANF *p) {
     free(p->order);
     free(p->bstring);
     free(p);
 }
 
-void print_anf_opencl (ANF *p) {
+/*
+ * Prints a polynomial. '0' is printed if there is no monomials.
+ */
+void print_anf (ANF *p) {
     for (int k = 0; k < p->monomials; k++) {
         print_bs(get_anf_bs(p, p->order[k]));
 
@@ -210,6 +270,11 @@ void print_anf_opencl (ANF *p) {
     printf("\n");
 }
 
+/*
+ * Prints a bit string, enclosing turned on bits in
+ * parentheses and separinting each monomial with 'xor'. If
+ * there is no bit turned on, '1' is printed.
+ */
 void print_bs (char *bs) {
     int bit_counter = 0;
 
