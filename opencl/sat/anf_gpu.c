@@ -12,11 +12,22 @@
 
 #define MAX_SOURCE_SIZE (0x1000000)
 
-cl_command_queue command_queue = NULL;
+/*
+ *    Global OpenCL Variables
+ */
+
+// Device ID
 cl_device_id device_id = NULL;
+// Context
 cl_context context = NULL;
+// Command Queue
+cl_command_queue command_queue = NULL;
+// Program
 cl_program program = NULL;
 
+/*
+ * Prints the device information 'name : vendor'
+ */
 static void print_device_info(cl_device_id device) {
     char name[128];
     char vendor[128];
@@ -27,6 +38,11 @@ static void print_device_info(cl_device_id device) {
     fprintf(stdout, "%s : %s\n", name, vendor);
 }
 
+/*
+ * Returns the value of 'device_id', if it is not NULL.
+ * Otherwise, gets the GPU device ID, it is assigned to
+ * 'device_id' and returned.
+ */
 cl_device_id get_device_id (cl_int *ret) {
     if (device_id != NULL) return device_id;
 
@@ -41,9 +57,13 @@ cl_device_id get_device_id (cl_int *ret) {
             &device_id, &ret_num_devices);
 
     return device_id;
-
 }
 
+/*
+ * Returns the value of 'context', if it is not NULL.
+ * Otherwise, gets the context given a device ID, it is
+ * assigned to 'context' and returned.
+ */
 cl_context get_context (cl_device_id device_id, cl_int *ret) {
     if (context == NULL) {
         context = clCreateContext(NULL, 1, &device_id, NULL, NULL, ret);
@@ -52,6 +72,11 @@ cl_context get_context (cl_device_id device_id, cl_int *ret) {
     return context;
 }
 
+/*
+ * Returns the value of 'command_queue', if it is not NULL.
+ * Otherwise, gets the command queue given a context and device
+ * ID, it is assigned to 'command_queue' and returned.
+ */
 cl_command_queue get_command_queue (cl_context context, cl_device_id device_id, cl_int *ret) {
     if (command_queue == NULL) {
         command_queue = clCreateCommandQueue(context, device_id, 0, ret);
@@ -60,6 +85,12 @@ cl_command_queue get_command_queue (cl_context context, cl_device_id device_id, 
     return command_queue;
 }
 
+/*
+ * Returns the value of 'program', if it is not NULL.
+ * Otherwise, load and build a OpenCL kernel program given a
+ * file path and context, it is assigned to 'program', checks
+ * if an error occurred and returns the program built.
+ */
 cl_program load_program (const char *file_path, cl_context context, cl_int *ret) {
     if (program != NULL) return program;
 
@@ -119,6 +150,11 @@ cl_program load_program (const char *file_path, cl_context context, cl_int *ret)
     return program;
 }
 
+/*
+ * Takes the concatenation of n bit strings where
+ * n = 'monomials', and creates polynomial (ANF). It is assumed
+ * that the size of 'bstring' is evenly diveded by BS_SIZE.
+ */
 ANF* bstringToANF (char *bstring, int monomials) {
     ANF *result = empty_anf();
 
@@ -131,6 +167,9 @@ ANF* bstringToANF (char *bstring, int monomials) {
     return result;
 }
 
+/*
+ * GPU implementation of 'map_anf_bs'. See anf_op.c file.
+ */
 ANF* map_bs_gpu (char *bs, ANF *p) {
     cl_int ret;
     // Get device information
@@ -183,88 +222,13 @@ ANF* map_bs_gpu (char *bs, ANF *p) {
     return bstringToANF(anf_p, p->monomials);
 }
 
+/*
+ * Release the OpenCL context, queue and program.
+ */
 void releaseAll (void) {
     cl_int ret;
 
     ret = clReleaseContext(context);
     ret = clReleaseProgram(program);
     ret = clReleaseCommandQueue(command_queue);
-}
-
-int first_test(void) {
-    // Create the two input vectors
-    int i;
-    const int LIST_SIZE = 3122;
-    int *A = (int *) malloc(sizeof(int)*LIST_SIZE);
-    int *B = (int *) malloc(sizeof(int)*LIST_SIZE);
-
-    for(i = 0; i < LIST_SIZE; i++) {
-        A[i] = i;
-        B[i] = LIST_SIZE - i;
-    }
-
-    // Get platform and device information
-    cl_int ret;
-    device_id = get_device_id(&ret);
-
-    // Create an OpenCL context
-    context = get_context(device_id, &ret);
-
-    // Create a command queue
-    command_queue = get_command_queue(context, device_id, &ret);
-
-    // Create memory buffers on the device for each vector 
-    cl_mem a_mem_obj = clCreateBuffer(context, CL_MEM_READ_ONLY, 
-            LIST_SIZE * sizeof(int), NULL, &ret);
-    cl_mem b_mem_obj = clCreateBuffer(context, CL_MEM_READ_ONLY,
-            LIST_SIZE * sizeof(int), NULL, &ret);
-    cl_mem c_mem_obj = clCreateBuffer(context, CL_MEM_WRITE_ONLY, 
-            LIST_SIZE * sizeof(int), NULL, &ret);
-
-    // Copy the lists A and B to their respective memory buffers
-    ret = clEnqueueWriteBuffer(command_queue, a_mem_obj, CL_TRUE, 0,
-            LIST_SIZE * sizeof(int), A, 0, NULL, NULL);
-    ret = clEnqueueWriteBuffer(command_queue, b_mem_obj, CL_TRUE, 0,
-            LIST_SIZE * sizeof(int), B, 0, NULL, NULL);
-
-    // Create a program from the kernel source
-    program = load_program("kernel.cl", context, &ret);
-
-    // Create the OpenCL kernel
-    cl_kernel kernel = clCreateKernel(program, "vector_add", &ret);
-
-    // Set the arguments of the kernel
-    ret = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&a_mem_obj);
-    ret = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&b_mem_obj);
-    ret = clSetKernelArg(kernel, 2, sizeof(cl_mem), (void *)&c_mem_obj);
-
-    // Execute the OpenCL kernel on the list
-    size_t global_item_size = LIST_SIZE; // Process the entire lists
-    size_t local_item_size = 1000; // Divide work items into groups of 64
-    ret = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, 
-            &global_item_size, NULL, 0, NULL, NULL);
-
-    // Read the memory buffer C on the device to the local variable C
-    int *C = (int*) malloc(sizeof(int)*LIST_SIZE);
-    ret = clEnqueueReadBuffer(command_queue, c_mem_obj, CL_TRUE, 0, 
-            LIST_SIZE * sizeof(int), C, 0, NULL, NULL);
-
-    // Display the result to the screen
-    // for(i = 0; i < LIST_SIZE; i++)
-    //     printf("%d + %d = %d\n", A[i], B[i], C[i]);
-
-    // Clean up
-    ret = clFlush(command_queue);
-    ret = clFinish(command_queue);
-    ret = clReleaseKernel(kernel);
-    ret = clReleaseProgram(program);
-    ret = clReleaseMemObject(a_mem_obj);
-    ret = clReleaseMemObject(b_mem_obj);
-    ret = clReleaseMemObject(c_mem_obj);
-    ret = clReleaseCommandQueue(command_queue);
-    ret = clReleaseContext(context);
-    free(A);
-    free(B);
-    free(C);
-    return 0;
 }

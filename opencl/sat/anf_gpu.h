@@ -15,5 +15,3 @@
 
 ANF* map_bs_gpu (char *bs, ANF *p);
 void releaseAll (void);
-
-int first_test(void);
