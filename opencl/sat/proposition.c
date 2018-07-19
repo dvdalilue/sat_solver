@@ -10,50 +10,66 @@
 #include "proposition.h"
 #include "stack.h"
 
+/*
+ * Creates a new statement using a given value and the struct
+ * type is set to 0 (Statement).
+ */
 Proposition* new_stm (void *v) {
     Proposition *p = (Proposition *) malloc(sizeof(Proposition));
     PropData *d = (PropData *) malloc(sizeof(PropData));
     Statement *s = (Statement *) malloc(sizeof(Statement));
-    
+
     s->value = v;
     d->stm = s;
-    
+
     p->kind = 0;
     p->prop = d;
-    
+
     return p;
 }
 
+/*
+ * Creates a new negation using a given proposition and the
+ * struct type is set to 1 (Negation).
+ */
 Proposition* new_neg (Proposition *p) {
     Proposition *r = (Proposition *) malloc(sizeof(Proposition));
     PropData *d = (PropData *) malloc(sizeof(PropData));
     Negation *n = (Negation *) malloc(sizeof(Negation));
-    
+
     n->p = p;
     d->neg = n;
     r->kind = 1;
     r->prop = d;
-    
+
     return r;
 }
 
+/*
+ * Creates a new binary operation using two given operands
+ * (propositions) and the struct type is set to 2
+ * (Binary Operation).
+ */
 Proposition* new_bin (Operation op, Proposition *p, Proposition *q) {
     Proposition *r = (Proposition *) malloc(sizeof(Proposition));
     PropData *d = (PropData *) malloc(sizeof(PropData));
     BinaryOperation *s = (BinaryOperation *) malloc(sizeof(BinaryOperation));
-    
+
     s->op = op;
     s->lhs = p;
     s->rhs = q;
-    
+
     d->binary = s;
-    
+
     r->kind = 2;
     r->prop = d;
-    
+
     return r;
 }
 
+/*
+ * Copy a proposition and creates another with the same structure
+ */
 Proposition* copy_prop (Proposition *p) {
     switch (p->kind) {
         case 0:
@@ -70,23 +86,38 @@ Proposition* copy_prop (Proposition *p) {
     return NULL;
 }
 
+/*
+ * Free the memory used by a proposition of kind 'statement'.
+ */
 void free_stm (Proposition *p) {
     free(p->prop->stm);
     free(p->prop);
     free(p);
 }
 
+/*
+ * Free the memory used by a proposition of kind 'negation'.
+ */
 void free_neg (Proposition *p) {
     free(p->prop->neg);
     free(p->prop);
     free(p);
 }
+
+/*
+ * Free the memory used by a proposition of kind
+ * 'binary operation'.
+ */
 void free_bin (Proposition *p) {
     free(p->prop->binary);
     free(p->prop);
     free(p);
 }
 
+/*
+ * Free the memory used of any proposition depending of its
+ * kind.
+ */
 void free_prop (Proposition *p) {
     switch (p->kind) {
         case 0:
@@ -101,13 +132,20 @@ void free_prop (Proposition *p) {
     }
 }
 
+/*
+ * Destroys a proposition recursively simulated with stack,
+ * freeing the memory only one time per pointer, because the
+ * same pointer could be used more than once. This traversal is
+ * following a DFS implementation to the right side of the
+ * tree.
+ */
 void destroy_prop (Proposition *p) {
     Proposition *aux;
     Stack *s; stack_new(&s);
     Stack *stm_unique; stack_new(&stm_unique);
-    
+
     push(s, (void *) p);
-    
+
     while (!is_empty(s)) {
         aux = (Proposition *) top(s);
         switch (aux->kind) {
@@ -135,6 +173,9 @@ void destroy_prop (Proposition *p) {
     destroy_stack(&stm_unique);
 }
 
+/*
+ * Prints a proposition recursively.
+ */
 void prop_to_s (Proposition *p) {
     switch (p->kind) {
         case 0:
