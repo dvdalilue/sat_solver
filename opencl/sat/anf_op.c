@@ -120,7 +120,7 @@ ANF* and_anf_op (ANF *p, ANF *q) {
  *
  * Note:
  *
- *     P 'Or' Q ==> P 'xor' Q 'xor' 'PQ'
+ *     P 'Or' Q ==> P 'xor' Q 'xor' PQ
  */
 ANF* or_to_xor_op (ANF *lhs, ANF *rhs) {
     ANF *result = NULL,
@@ -143,7 +143,7 @@ ANF* or_to_xor_op (ANF *lhs, ANF *rhs) {
  *
  * Note:
  *
- *     P 'Implie' Q ==> 1 'xor' P 'xor' 'PQ'
+ *     P 'Implie' Q ==> 1 'xor' P 'xor' PQ
  */
 ANF* implie_to_xor_op (ANF *lhs, ANF *rhs) {
     ANF *result = NULL,
@@ -168,17 +168,14 @@ ANF* implie_to_xor_op (ANF *lhs, ANF *rhs) {
  *
  * Note:
  *
- *     P 'Eq' Q ==> 1 'xor' Q 'xor' 'PQ'
+ *     P 'Eq' Q ==> 1 'xor' P 'xor' Q
  */
 ANF* eq_to_xor_op (ANF *lhs, ANF *rhs) {
     ANF *result = NULL,
         *tmp = NULL,
         *local_one = one();
 
-    tmp = and_anf_op(lhs, rhs);
-    result = xor_anf_op(rhs, tmp);
-    free_anf(tmp);
-    tmp = result;
+    tmp = xor_anf_op(lhs, rhs);
     result = xor_anf_op(local_one, tmp);
     free_anf(tmp);
     free_anf(local_one);
