@@ -1,0 +1,200 @@
+\chapter{Polinomio de \textit{Zhegalkin}}
+
+\begin{chapquote}{Rudyard Kipling, \textit{El gato que caminaba solo}}
+Eres el Gato que camina solo y a quien no le importa estar aquí o allá. No eres un amigo ni un servidor. Tú mismo lo has dicho. Márchate y camina solo por cualquier lugar.
+\end{chapquote}
+
+En este capítulo se expondrá una forma poco usual de expresar formulas lógicas, en lo que se refiere a la resolución del problema \sat, así como su representación abstracta al momento de implementar el \textit{solver} dependiendo del lenguaje de programación. Para este trabajo se ha usado \textit{Haskell} para elaborar un prototipo funcional y, a fin de usar los recursos de la tarjeta gráfica, se usa el lenguaje \textit{C} por su compatibilidad con la librería \textit{open source} OpenCL. En primer lugar se esbozan los conceptos esenciales, siguiendo la implementación funcional, para luego profundizar en la implementación secuencial imperativa.
+En este capítulo se expondrá una forma poco usual de expresar formulas lógicas, en lo que se refiere a la resolución del problema \sat, así como su representación abstracta al momento de implementar el \textit{solver} dependiendo del lenguaje de programación. Para este trabajo se ha usado \textit{Haskell} para elaborar un prototipo funcional y, a fin de usar los recursos de la tarjeta gráfica, se usa el lenguaje \textit{C} por su compatibilidad con la librería \textit{open source} OpenCL. En primer lugar se esbozan los conceptos esenciales, siguiendo la implementación funcional, para luego profundizar en la implementación secuencial imperativa.
+
+\section{Definición}
+
+\emph{Ivan Ivanovich Zhegalkin} introdujo en 1927 una forma de representar operaciones en álgebra booleana. El polinomio de \textit{Zhegalkin}, conocido también con el nombre de \textbf{forma normal algebraica} (\textit{ANF}), está constituida por un número finito de monomios operados por la operación \textit{XOR} ($\oplus$), estos se conforman por la multiplicación ($\cdot$) de variables que pueden tomar los valores $0$ o $1$; siendo estos valores posibles monomios. Además, no se permite expresar el complemento de una variable o monomio.
+
+\subsection{Propiedades de los operadores}
+
+Es importante enunciar ciertas propiedades que ilustran el comportamiento de esta representación. Además de ser útiles, y necesarias, al momento de implementar una solución, se usan para reducir los polinomios y mantener la forma normal algebraica.
+
+\begin{figure}[!ht]
+\[1 \cdot P \equiv P\]
+\caption{Identidad de ($\cdot$)}
+\end{figure}
+
+\begin{figure}[!ht]
+\[0 \oplus P \equiv P\]
+\caption{Identidad de ($\oplus$)}
+\end{figure}
+
+\begin{figure}[!ht]
+\[0 \cdot P \equiv 0\]
+\caption{Elemento absorbente de ($\cdot$)}
+\end{figure}
+
+\newpage
+
+\begin{figure}[!ht]
+\[P \cdot P \equiv P\]
+\caption{Idempotencia de ($\cdot$)}
+\end{figure}
+
+\begin{figure}[!ht]
+\[P \oplus P \equiv 0\]
+\caption{Eliminación de monomios iguales por ($\oplus$)}
+\label{fig:oplus_e}
+\end{figure}
+
+No queda de más decir que el operador ($\cdot$) tiene mayor precedencia que ($\oplus$). Por otro lado, los polinomios de \textit{Zhegalkin} cumplen con la propiedad distributiva, de igual forma que los polinomios usuales en algebra. Así como las propiedades conmutativas para ($\cdot$) y ($\oplus$).
+
+\subsection{Equivalencia con operaciones lógicas}
+
+Existe una correspondencia entre las operaciones booleanas ($\land$), ($\lor$), ($\implies$), ($\iff$) y ($\neg$), y las operaciones ($\oplus$) y ($\cdot$). A continuación, en la tabla \ref{table:1}, se presenta cada operación con su respectiva equivalencia.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|| c | c ||}
+ \hline
+ Operación Booleana & Equivalente \textit{ANF} \\ [0.1ex]
+ \hline\hline
+ $P \land Q$ & $P\cdot Q$  \\
+ $P \lor Q$ & $P\oplus Q\oplus P\cdot Q$  \\
+ $P \implies Q$ & $1\oplus P\oplus P\cdot Q$  \\
+ $P \iff Q$ & $1\oplus P\oplus Q$  \\
+ $\neg P$ & $1\oplus P$  \\
+ \hline
+\end{tabular}
+\caption{Tabla de equivalencia entre operaciones}
+\label{table:1}
+\end{table}
+
+Se puede deducir el caso de $P \iff Q$ traduciendo a ${P\implies Q \land Q \implies P}$, aplicando la propiedad distributiva de ($\cdot$) sobre ($\oplus$) y reduciendo el polinomio, como puede verse a continuación.
+
+\begin{align*}
+                 & P\implies Q\land Q \implies P\\
+    \rightarrow\ & (1\oplus P\oplus P\cdot Q)\land (1\oplus Q\oplus P\cdot Q)\\
+    \rightarrow\ & (1\oplus P\oplus P\cdot Q)\cdot (1\oplus Q\oplus P\cdot Q)\\
+    \rightarrow\ & 1\oplus P\oplus P\cdot Q \oplus Q\oplus P\cdot Q\oplus P\cdot Q \oplus P\cdot Q \oplus P\cdot Q \oplus P\cdot Q\\
+    \rightarrow\ & 1\oplus P\oplus Q
+\end{align*}
+
+\section{Implementación en \textit{Haskell}}
+
+En principio es necesario poder representar proposiciones lógicas y construir a partir de condiciones, que establezca un problema determinado, con el fin de poder modelar mediante una fórmula proposicional. Para ello, se diseñó un tipo de dato abstracto arborescente (recursivo), que permite representar formulas lógicas. A continuación, en la figura \ref{fig:mp}, se puede ver un ejemplo para ilustrar la idea que se plantea.
+
+\begin{figure}[!ht]
+% \centering
+    % \begin{minipage}[c][3.5cm][b]{.5\textwidth}
+    %   \centering
+    \Tree [.$\implies$ [.$\land$ [.$\implies$ P Q ] P ] Q ]
+      % \caption*{Árbol de derivación 1}
+    %   \label{fig:sub1}
+    % \end{minipage}%
+% \begin{minipage}[c][3.5cm][b]{.5\textwidth}
+% %   \centering
+%     \Tree [.+ 1 [.+ [.* 3 2 ] 1 ] ]
+%   \caption*{Árbol de derivación 2}
+% %   \label{fig:sub2}
+% \end{minipage}
+\caption{Modus Ponens}
+\label{fig:mp}
+\end{figure}
+
+\subsection{De proposición lógica a polinomio de \textit{Zhegalkin}}
+
+Para construir el polinomio de \textit{Zhegalkin} a partir de una formula proposicional, se usa la equivalencia de la tabla \ref{table:1} mientras se recorre recursivamente la estructura arborescente y aplicando las distintas propiedades. Si se logra contruir un polinomio que no esté vacío, se puede decir que la formula es satisfactible. Se entiende por polinomio no vacío aquel que tiene al menos un monomio distinto de cero ($0$). En el caso de la figura \ref{fig:mp}, la construcción del polinomio resultante sería la que se presenta en la figura \ref{fig:mp_anf}.
+
+\begin{figure}[!ht]
+\begin{align*}
+                 & (P\implies Q)\land P \implies Q\\
+    \rightarrow\ & (1 \oplus P \oplus P\cdot Q)\land P \implies Q\\
+    \rightarrow\ & (1 \oplus P \oplus P\cdot Q)\cdot P \implies Q\\
+    \rightarrow\ & (P \oplus P \oplus P\cdot Q) \implies Q\\
+    \rightarrow\ & 1 \oplus (P \oplus P \oplus P\cdot Q) \oplus (P \oplus P \oplus P\cdot Q)\cdot Q\\
+    \rightarrow\ & 1 \oplus P \oplus P \oplus P\cdot Q \oplus P\cdot Q\oplus P\cdot Q \oplus P\cdot Q \\
+    \rightarrow\ & 1
+\end{align*}
+\caption{Construcción del polinomio para Modus Ponens}
+\label{fig:mp_anf}
+\end{figure}
+
+Como puede verse en la figura anterior, el polinomio resultante es $1$, esto nos quiere decir que la proposición lógica es una tautología. En el caso que el polinomio sea $0$, sería una formula insatisfactible; satisfactible en cualquier otro caso.
+
+\subsection{Orden estructural}
+
+Incorporar orden al polinomio es útil si se quiere reducir su estructura, esto es vital porque esta representación tiende a crecer rápida y desmesuradamente. Por lo tanto, la implementación en \textit{Haskell}, define un orden estructural mediante la clase de tipo \texttt{Ord}. Esto nos permite aprovechar funciones previamente especificadas en el \textit{hackage} \texttt{Data.List}, en particular \texttt{sort}. Cuando se tiene ordenado el polinomio, es posible reducir el número de monomios usando la propiedad de la figura \ref{fig:oplus_e}, ya que los monomios iguales estarán posicionados contiguamente. Siguiendo las siguientes reglas.
+
+\textbf{ARREGLAR}
+
+Es importante acotar que, al momento de ordenar el polinomio, existe un orden externo y otro más interno para los monomios. Estos últimos, asumiendo que están compuestos solo por variables y se ha aplicado la propiedad distributiva para cumplir esta condición, estarán ordenanos lexicográficamente. En cuanto al orden del polinomio, este compara y ordena los monomios según su tamaño, y en caso de ser iguales, el orden tmabién es lexicográfico. %se rige por la siguientes reglas.
+
+\begin{enumerate}
+    \item Cuando se comparan dos polinomios, se asume que los monomios estan ordenados y, quien posea el menor número de monomios será el menor.
+    \item En el caso de que posean el mismo número de monomios, 
+\end{enumerate}
+
+\section{Implementación en \textit{C}}
+
+A diferencia de \textit{Haskell}, la representación abstracta para el polinomio en \textit{C} deja de ser arborescente y se traduce a un arreglo de arreglo de \textit{bits}; usando un espacio de memoria contigua. Donde el desplazamiento se hace manualmente para acceder a los distintos arreglos de \textit{bits}, que representan a un monomio en específico. Esta desición de diseño viene dada por simplicidad y, porque resulta idóneo al momento de realizar una implementación que utiliza recursos de la tarjeta gráfica; esto se expondrá con más detalle en siguiente capítulo.
+
+\subsection{Monomio como un arreglo de \textit{bits}}
+
+Representar un monomio como un arreglo de \textit{bits} tiene ventajas con respecto a una estructura arborescente porque mantiene el orden lexicográfico y si se desea agregar una variable, solo se debe enciender un \textit{bit}. Comparar dos monomios resulta un poco más constoso porque habría que recorrer todo el arreglo en caso de que sean iguales, sino al primer \textit{bit} que sea diferente nos indicaría quien es menor y mayor. El primero en tener un \textit{bit} encendido, donde el otro no, será el menor. Se puede ver un ejemplo de dos monomios a continuación en la figura \ref{fig:mbs}.
+
+\begin{figure}[!ht]
+    \centering\noindent
+    $\fbox{0} \sep \fbox{1} \sep \fbox{0} \sep \fbox{0} \sep \fbox{1} \sep \fbox{0}$\ \dots\ \\
+    \noindent
+    $\fbox{0} \sep \fbox{0} \sep \fbox{1} \sep \fbox{0} \sep \fbox{0} \sep \fbox{0}$\ \dots\
+\caption{Monomios como arreglo de \textit{bits}}
+\label{fig:mbs}
+\end{figure}
+
+Cada posición en el arreglo representa una variable y como se puede ver, el primer monomio es menor que el segundo, independientemente de la cantidad de variables que posean ambos monomios.
+
+\subsection{Polinomio como concatenación de monomios}
+
+Usando los monomios de la parte anterior y fijando el tamaño de los mismos, es posible agruparlos en un espacio de memoria contigua para representar un polinomio como la concatenación de subespacios de memoria. Gracias a que se ha configurado la capacidad de los monomios como finita e igual para todos, acceder a uno en específico se traduce en desplazar la dirección de memoria tantas veces como se indique multiplicando por esa capacidad máxima.
+
+\begin{figure}[!ht]
+    \centering\noindent
+    $\fcolorbox{red}{white}{0} \sep \fcolorbox{red}{white}{1} \sep \fcolorbox{red}{white}{0} \sep \fcolorbox{red}{white}{0} \sep \fcolorbox{red}{white}{0} \sep \fcolorbox{red}{white}{0} \sep \fcolorbox{blue}{white}{0} \sep \fcolorbox{blue}{white}{1} \sep \fcolorbox{blue}{white}{0} \sep \fcolorbox{blue}{white}{0} \sep \fcolorbox{blue}{white}{1} \sep \fcolorbox{blue}{white}{1} \sep \fcolorbox{green}{white}{0} \sep \fcolorbox{green}{white}{0} \sep \fcolorbox{green}{white}{0} \sep \fcolorbox{green}{white}{0} \sep \fcolorbox{green}{white}{1} \sep \fcolorbox{green}{white}{1}$\ \dots\ \\
+\caption{Polinomio como arreglo de arreglo de \textit{bits}}
+\label{fig:pbs}
+\end{figure}
+
+En la figura \ref{fig:pbs} se puede ver un ejemplo de como sería representado un polinomio con arreglo de \textit{bits}, que al mismo está subdividido para representar los monomios; identificados con colores diferentes. Donde el tamaño incrementa dinámicamente a medida que se requiera. Si la capacidad de los monomios está definida como una constante \texttt{BS\_SIZE}, acceder al monomio en la posición \texttt{i}, con un apuntador a memoria llamado \texttt{polynomial}, sería de la siguiente manera: \texttt{(polynomial + i * BS\_SIZE)}.
+
+\subsection{Ordenamiento del polinomio}
+
+Para ordenar un polinomio sin necesidad de tener de intercambiar \texttt{BS\_SIZE} valores cada vez que dos monomios cambian de posición, se agregó un arreglo que indica el orden de los subíndices correspondientes con cada arreglo de \textit{bits}. El ordenamiento ocurre en este arreglo auxiliar, que simplemente son referencias al espacio de memoria donde se almacenan los monomios y este quedaría intacto.
+
+\subsection{Eliminar un monomio del polinomio}
+
+Dada la representación, eliminar un monomio se ha implementado como un desplazamiento relativo de \textit{bits} a partir del valor que se está eliminando. Esto afectaría tanto al polinomio como al arreglo auxiliar de ordenamiento. Es de esperar que la referencia a los monomios se vea alterada por lo que es necesario sustraer \texttt{1} de la posición referenciada a todos los monomios que hayan sido desplazados. En la figura \ref{fig:p_e} se puede ver el polinomio resultante luego de eliminar el último monomio.
+
+\vspace{-1.5em}
+
+\begin{figure}[!ht]
+    \centering
+    \begin{minipage}[c][3.5cm][b]{.65\textwidth}
+    \noindent
+    $\fbox{0} \sep \fbox{2} \sep \fbox{1}$\ \\
+    \noindent
+    $\fcolorbox{red}{white}{0} \sep \fcolorbox{red}{white}{1} \sep \fcolorbox{red}{white}{0} \sep \fcolorbox{red}{white}{0} \sep \fcolorbox{red}{white}{0} \sep \fcolorbox{red}{white}{0} \sep \fcolorbox{green}{white}{0} \sep \fcolorbox{green}{white}{0} \sep \fcolorbox{green}{white}{0} \sep \fcolorbox{green}{white}{0} \sep \fcolorbox{green}{white}{1} \sep \fcolorbox{green}{white}{0} \sep \fcolorbox{blue}{white}{0} \sep \fcolorbox{blue}{white}{1} \sep \fcolorbox{blue}{white}{0} \sep \fcolorbox{blue}{white}{0} \sep \fcolorbox{blue}{white}{1} \sep \fcolorbox{blue}{white}{1}$\ \\
+    \noindent
+    $\fbox{0} \sep \fbox{1}$\ \\
+    \noindent
+    $\fcolorbox{red}{white}{0} \sep \fcolorbox{red}{white}{1} \sep \fcolorbox{red}{white}{0} \sep \fcolorbox{red}{white}{0} \sep \fcolorbox{red}{white}{0} \sep \fcolorbox{red}{white}{0} \sep \fcolorbox{blue}{white}{0} \sep \fcolorbox{blue}{white}{1} \sep \fcolorbox{blue}{white}{0} \sep \fcolorbox{blue}{white}{0} \sep \fcolorbox{blue}{white}{1} \sep \fcolorbox{blue}{white}{1}$
+    \end{minipage}
+\caption{Eliminación de monomio}
+\label{fig:p_e}
+\end{figure}
+
+En la figura anterior se puede ver a dos pares de arreglos, el arreglo auxiliar y el polinomio, donde el segundo par representa el polinomio resultante después de eliminar el último monomio. El arreglo auxiliar es quien tiene la información correspondiente al posicionamiento de los monomios, por lo tanto, para mantener consistencia, las referencias cambian por el desplazamiento producido.
+
+\subsection{Operaciones entre polinomios}
+
+Siguiendo las dos operaciones de los polinomios de \textit{Zhegalkin}, ($\cdot$) y ($\oplus$), se han definido dos funciones que realizan estas operaciones entre dos polinomios, asumiendo que están ordenados y en \textit{ANF}, computando su operación respectiva, retornando un nuevo polinomio manteniendo el ordenamiento y la forma normal algebraica. Realizando cualquier posible reducción, con el fin de obtener eficiencia computacional y de memoria, ya que esta representación usaría la memoria de manera excesiva; como se ha mencionado antes.
+
+\subsubsection{Multiplicación de polinomios}
+
+Este es uno de los puntos más delicados y claves de esta representación, sobre todo por su complejidad algorítmica. Actualmente se tiene una implementación que tiene complejidad cuadrática, ya que se debe multiplicar cada monomio de un polinomio con el otro y al final se operan con ($\oplus$). La intención inicial es implementar paralelismo en esta operación, porque la misma se presta para implementarse con ese tipo de estrategia.
