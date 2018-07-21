@@ -78,7 +78,7 @@ Se puede deducir el caso de $P \iff Q$ traduciendo a ${P\implies Q \land Q \impl
 
 \section{Implementación en \textit{Haskell}}
 
-En principio es necesario poder representar proposiciones lógicas y construir a partir de condiciones, que establezca un problema determinado, con el fin de poder modelar mediante una fórmula proposicional. Para ello, se diseñó un tipo de dato abstracto arborescente (recursivo), que permite representar formulas lógicas. A continuación, en la figura \ref{fig:mp}, se puede ver un ejemplo para ilustrar la idea que se plantea.
+En principio es necesario poder representar proposiciones lógicas y construir a partir de restricciones, que establezca un problema determinado, con el fin de poder modelar mediante una fórmula proposicional. Para ello, se diseñó un tipo de dato abstracto arborescente (recursivo), que permite representar formulas lógicas. A continuación, en la figura \ref{fig:mp}, se puede ver un ejemplo para ilustrar la idea que se plantea.
 
 \begin{figure}[!ht]
 % \centering
@@ -99,6 +99,7 @@ En principio es necesario poder representar proposiciones lógicas y construir a
 \end{figure}
 
 \subsection{De proposición lógica a polinomio de \textit{Zhegalkin}}
+\label{sec:fromProp}
 
 Para construir el polinomio de \textit{Zhegalkin} a partir de una formula proposicional, se usa la equivalencia de la tabla \ref{table:1} mientras se recorre recursivamente la estructura arborescente y aplicando las distintas propiedades. Si se logra contruir un polinomio que no esté vacío, se puede decir que la formula es satisfactible. Se entiende por polinomio no vacío aquel que tiene al menos un monomio distinto de cero ($0$). En el caso de la figura \ref{fig:mp}, la construcción del polinomio resultante sería la que se presenta en la figura \ref{fig:mp_anf}.
 
@@ -135,6 +136,8 @@ Es importante acotar que, al momento de ordenar el polinomio, existe un orden ex
 
 A diferencia de \textit{Haskell}, la representación abstracta para el polinomio en \textit{C} deja de ser arborescente y se traduce a un arreglo de arreglo de \textit{bits}; usando un espacio de memoria contigua. Donde el desplazamiento se hace manualmente para acceder a los distintos arreglos de \textit{bits}, que representan a un monomio en específico. Esta desición de diseño viene dada por simplicidad y, porque resulta idóneo al momento de realizar una implementación que utiliza recursos de la tarjeta gráfica; esto se expondrá con más detalle en siguiente capítulo.
 
+Al igual que la versión en \textit{Haskell}, el proceso de transformación, desde una proposición lógica a su representación polinomial, es similar al que se describe en la sección \ref{sec:fromProp}.
+
 \subsection{Monomio como un arreglo de \textit{bits}}
 
 Representar un monomio como un arreglo de \textit{bits} tiene ventajas con respecto a una estructura arborescente porque mantiene el orden lexicográfico y si se desea agregar una variable, solo se debe enciender un \textit{bit}. Comparar dos monomios resulta un poco más constoso porque habría que recorrer todo el arreglo en caso de que sean iguales, sino al primer \textit{bit} que sea diferente nos indicaría quien es menor y mayor. El primero en tener un \textit{bit} encendido, donde el otro no, será el menor. Se puede ver un ejemplo de dos monomios a continuación en la figura \ref{fig:mbs}.
@@ -148,7 +151,7 @@ Representar un monomio como un arreglo de \textit{bits} tiene ventajas con respe
 \label{fig:mbs}
 \end{figure}
 
-Cada posición en el arreglo representa una variable y como se puede ver, el primer monomio es menor que el segundo, independientemente de la cantidad de variables que posean ambos monomios.
+Cada posición en el arreglo representa una variable y como se puede ver, el primer monomio es menor que el segundo, independientemente de la cantidad de variables que posean ambos monomios. Cabe acotar que, si no hay ningún \textit{bit} encendido, esto representa al monomio \texttt{1}.
 
 \subsection{Polinomio como concatenación de monomios}
 
@@ -163,6 +166,8 @@ Usando los monomios de la parte anterior y fijando el tamaño de los mismos, es 
 
 En la figura \ref{fig:pbs} se puede ver un ejemplo de como sería representado un polinomio con arreglo de \textit{bits}, que al mismo está subdividido para representar los monomios; identificados con colores diferentes. Donde el tamaño incrementa dinámicamente a medida que se requiera. Si la capacidad de los monomios está definida como una constante \texttt{BS\_SIZE}, acceder al monomio en la posición \texttt{i}, con un apuntador a memoria llamado \texttt{polynomial}, sería de la siguiente manera: \texttt{(polynomial + i * BS\_SIZE)}.
 
+\paragraph{Polinomio vacío} Si ocurre que, el polinomio no tiene ni un monomio, se interpreta como \texttt{0}, es decir, es insatisfactible.
+
 \subsection{Ordenamiento del polinomio}
 
 Para ordenar un polinomio sin necesidad de tener de intercambiar \texttt{BS\_SIZE} valores cada vez que dos monomios cambian de posición, se agregó un arreglo que indica el orden de los subíndices correspondientes con cada arreglo de \textit{bits}. El ordenamiento ocurre en este arreglo auxiliar, que simplemente son referencias al espacio de memoria donde se almacenan los monomios y este quedaría intacto.
@@ -171,7 +176,7 @@ Para ordenar un polinomio sin necesidad de tener de intercambiar \texttt{BS\_SIZ
 
 Dada la representación, eliminar un monomio se ha implementado como un desplazamiento relativo de \textit{bits} a partir del valor que se está eliminando. Esto afectaría tanto al polinomio como al arreglo auxiliar de ordenamiento. Es de esperar que la referencia a los monomios se vea alterada por lo que es necesario sustraer \texttt{1} de la posición referenciada a todos los monomios que hayan sido desplazados. En la figura \ref{fig:p_e} se puede ver el polinomio resultante luego de eliminar el último monomio.
 
-\vspace{-1.5em}
+% \vspace{-1.5em}
 
 \begin{figure}[!ht]
     \centering
@@ -189,6 +194,8 @@ Dada la representación, eliminar un monomio se ha implementado como un desplaza
 \label{fig:p_e}
 \end{figure}
 
+\newpage
+
 En la figura anterior se puede ver a dos pares de arreglos, el arreglo auxiliar y el polinomio, donde el segundo par representa el polinomio resultante después de eliminar el último monomio. El arreglo auxiliar es quien tiene la información correspondiente al posicionamiento de los monomios, por lo tanto, para mantener consistencia, las referencias cambian por el desplazamiento producido.
 
 \subsection{Operaciones entre polinomios}
@@ -199,7 +206,10 @@ Siguiendo las dos operaciones de los polinomios de \textit{Zhegalkin}, ($\cdot$)
 
 Este es uno de los puntos más delicados y claves de esta representación, sobre todo por su complejidad algorítmica. Actualmente se tiene una implementación que tiene complejidad cuadrática, ya que se debe multiplicar cada monomio de un polinomio con el otro y al final se operan con ($\oplus$). La intención inicial es implementar paralelismo en esta operación, porque la misma se presta para implementarse con ese tipo de estrategia.
 
+\paragraph{Monomio por un polinomio}
+
+Se ha diseñado esta multiplicación de forma similar al comportamiento de la función de orden superior \texttt{map}, aplicando la multiplicación entre monomios para todos el polinomio. Esta última operación no es más que la unión de los \textit{bits} encendidos de cada uno.
+
 \subsubsection{Suma exclusiva de polinomios}
 
 Esta operación se basa en el algoritmo \texttt{merge} del ordenamiento por mezcla (\textit{Merge sort}), donde se va comparando el primer elemento de cada polinomio, agregando el menor a un nuevo polinomio y dando un paso al siguiente monomio hasta que alguno de los polinomios se quede sin más monomios. Una diferencia importante, con respecto al algoritmo original, es si la comparación nos indique que son iguales, en este caso ambos monomios son omitidos del nuevo polinomio y se pasa al siguiente en ambos. Se ha hecho el supuesto que los polinomios están ordenados y todos los monomios son únicos para cada uno de los dos.
-
