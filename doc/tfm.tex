@@ -29,6 +29,12 @@
   \fancyfoot[C]{\thepage}
 }
 
+\fancypagestyle{lastpage}{
+  \renewcommand{\headrulewidth}{0pt}
+  \fancyhead{}
+  \fancyfoot{}
+}
+
 \makeatletter
 \renewcommand{\@chapapp}{}% Not necessary...
 \newenvironment{chapquote}[2][2em]
@@ -67,58 +73,21 @@
 
 \include{introduction}
 \include{anf}
+\include{anf_gpu}
+\include{others}
+\include{results}
+\include{conclusions}
 
-\chapter{Marco metodológico}
+\newpage
 
-\begin{chapquote}{Andréi Tarkovski, \textit{Solaris}}
-Cuando hace viento, es fácil confundir el vaivén de un arbusto lloroso con una criatura viviente.
-\end{chapquote}
+\thispagestyle{lastpage}
 
-\lipsum[1-2]
-
-\chapter{Motivación}
-
-\begin{chapquote}{Emile Michel Cioran, \textit{Silogismos de la amargura}}
-Sólo los espíritus agrietados poseen aberturas al más allá.
-\end{chapquote}
-
-\lipsum[1-2]
-
-\chapter{Prototipo funcional}
-
-\begin{chapquote}{Platón, \textit{Alegoría de la cueva}}
-\textsc{Socrates}: Imagine this: People live under the earth in a cavelike dwelling. ... The people have been in this dwelling since childhood, shackled by the legs and neck. ... Some light, namely from a fire that casts its glow toward them from behind them, ... Between the fire and those who are shackled there runs a walkway at a certain height. ... a low wall has been built the length of the walkway, like the low curtain that puppeteers put up, ... along this low wall people are carrying all sorts of things that reach up higher than the wall.
-
-\vspace{1em}
-
-\textsc{Glaucon}: ... these are unusual prisoners.
-
-\textsc{Socrates}: They are very much like us humans...
-\end{chapquote}
-
-\lipsum[1-2]
-
-\chapter{Prototipo secuencial}
-
-\begin{chapquote}{Radiohead, \textit{Lotus Flower}}
-\noindent Slowly we unfurl\\
-As lotus flowers\\
-'Cause all I want is the moon upon a stick\\
-I dance around the pit\\
-The darkness is beneath\\
-I can't kick your habit\\
-Just to feed your fast ballooning head\\
-Listen to your heart
-\end{chapquote}
-
-\lipsum[1-2]
-
-\chapter{Prototipo paralelo}
-
+\phantom{x}
+\vfill
 \begin{chapquote}{Ethel Watts Mumford}
-\noindent God gave us our relatives; thank God we can choose our friends
+\noindent Dios nos dio a nuestros familiares; gracias a Dios podemos elegir a nuestro amigos
 \end{chapquote}
-
-\lipsum[1-2]
+\vfill
+\phantom{x}
 
 \end{document}
