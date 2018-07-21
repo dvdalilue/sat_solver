@@ -17,10 +17,17 @@
 \usepackage{lipsum}
 % \usepackage{setspace}
 % \usepackage{multirow}
-% \usepackage{fancyhdr}
+\usepackage{fancyhdr}
 % \usepackage{relsize}
 \usepackage{xspace}
+\usepackage{qtree}
 \usepackage{cite}
+\usepackage{anyfontsize}
+
+\fancypagestyle{pagebottom}{
+  \renewcommand{\headrulewidth}{0pt}
+  \fancyfoot[C]{\thepage}
+}
 
 \makeatletter
 \renewcommand{\@chapapp}{}% Not necessary...
@@ -32,88 +39,36 @@
   {\par\vspace{.5em}\normalfont\hfill--\ \chapquote@author\hspace*{\@tempdima}\par\bigskip}
 \makeatother
 
+\renewcommand{\baselinestretch}{1.2}
+
+\renewcommand{\lstlistlistingname}{Índice de Figuras}
+\renewcommand{\spanishlisttablename}{Índice de Tablas}
+\renewcommand\spanishtablename{Tabla}
+
+\newcommand{\sat}{\textit{SAT}}
+\newcommand{\sep}{\hspace*{.1em}}
+
 \begin{document}
 
 \frontmatter
 
-\begin{titlepage}
-    \begin{center}
-        \includegraphics[width=0.15\textwidth]{logo.png}\\
-        {\large UNIVERSIDAD POLITÉCNICA DE MADRID}\\
-        ESCUELA TÉCNICA SUPERIOR DE INGENIEROS INFORMÁTICOS\\
-        DEPARTAMENTO DE LENGUAJES Y SISTEMAS INFORMÁTICOS E INGENIERÍA DE SOFTWARE
-
-        \vspace{6em}
-
-        \textbf{TITULO QUE TAL QUE PIN QUE PAO}
-
-        \vspace{6em}
-
-        Por:\\
-        David Alejandro Lilue Borrero\\
-
-        \vspace{6em}
-
-        TRABAJO FINAL DE MASTER\\
-        Presentado ante la ilustre Universidad Politécnica de Madrid\\
-        como requisito para optar al título de Máster en\\
-        Software y Sistemas\\
-        
-        \vfill
-        Madrid, Junio de 2018
-    \end{center}
-\end{titlepage}
-
-\newpage
-
-\cleardoublepage
-\phantomsection
-\addcontentsline{toc}{chapter}{Dedicatoria}
-\begin{flushright}
-Para todas esas personas\\
-que han hecho sentir a un desconocido como en casa,\\
-donde la curiosidad y tolerancia superan los miedos,\\
-y de alguna forma, mágica, nace la hermandad.
-\end{flushright}
-
-\newpage
-
-\cleardoublepage
-\phantomsection
-\addcontentsline{toc}{chapter}{Agradecimientos}
-\begin{flushleft}
-Agradezco a ese avión de papel\\
-que le ha permitido volar al kiwi\\
-dejando en su camino una estala con forma de espiral,\\
-aquella posee una proporción casi divina; de oro.
-\end{flushleft}
-
-\newpage
+\include{title} % Title page
+\include{dedication}
+\include{acknowledgment}
+\include{abstract}
 
 \tableofcontents
+\listoffigures
+\listoftables
 
 \newpage
 
 \mainmatter
 
-\chapter{Introducción}
+\include{introduction}
+\include{anf}
 
-\begin{chapquote}{Miguel de Cervantes, \textit{Don Quijote de la Mancha}}
-Sola una cosa tiene mala el sueño, según he oído decir, y es que se parece a la muerte, pues de un dormido a un muerto hay muy poca diferencia.
-\end{chapquote}
-
-\lipsum[1-2]
-
-\chapter{Marco teórico}
-
-\begin{chapquote}{Rudyard Kipling, \textit{El gato que caminaba solo}}
-Eres el Gato que camina solo y a quien no le importa estar aquí o allá. No eres un amigo ni
-un servidor. Tú mismo lo has dicho. Márchate y camina solo por cualquier lugar.
-\end{chapquote}
-
-\lipsum[1-2]
-
-\chapter{Marco metodolócico}
+\chapter{Marco metodológico}
 
 \begin{chapquote}{Andréi Tarkovski, \textit{Solaris}}
 Cuando hace viento, es fácil confundir el vaivén de un arbusto lloroso con una criatura viviente.
