@@ -198,3 +198,8 @@ Siguiendo las dos operaciones de los polinomios de \textit{Zhegalkin}, ($\cdot$)
 \subsubsection{Multiplicación de polinomios}
 
 Este es uno de los puntos más delicados y claves de esta representación, sobre todo por su complejidad algorítmica. Actualmente se tiene una implementación que tiene complejidad cuadrática, ya que se debe multiplicar cada monomio de un polinomio con el otro y al final se operan con ($\oplus$). La intención inicial es implementar paralelismo en esta operación, porque la misma se presta para implementarse con ese tipo de estrategia.
+
+\subsubsection{Suma exclusiva de polinomios}
+
+Esta operación se basa en el algoritmo \texttt{merge} del ordenamiento por mezcla (\textit{Merge sort}), donde se va comparando el primer elemento de cada polinomio, agregando el menor a un nuevo polinomio y dando un paso al siguiente monomio hasta que alguno de los polinomios se quede sin más monomios. Una diferencia importante, con respecto al algoritmo original, es si la comparación nos indique que son iguales, en este caso ambos monomios son omitidos del nuevo polinomio y se pasa al siguiente en ambos. Se ha hecho el supuesto que los polinomios están ordenados y todos los monomios son únicos para cada uno de los dos.
+
