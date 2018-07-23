@@ -14,13 +14,12 @@
 \usepackage{listings}
 \usepackage{titlesec}
 \usepackage{epigraph}
-\usepackage{lipsum}
 \usepackage{setspace}
-% \usepackage{multirow}
 \usepackage{fancyhdr}
-% \usepackage{relsize}
+\usepackage{lipsum}
 \usepackage{xspace}
 \usepackage{qtree}
+\usepackage{color}
 \usepackage{cite}
 \usepackage{anyfontsize}
 
@@ -36,7 +35,7 @@
 }
 
 \makeatletter
-\renewcommand{\@chapapp}{}% Not necessary...
+\renewcommand{\@chapapp}{}% Not necessary...?
 \newenvironment{chapquote}[2][2em]
   {\setlength{\@tempdima}{#1}%
    \def\chapquote@author{#2}%
@@ -54,6 +53,21 @@
 
 \newcommand{\sat}{\textit{SAT}\xspace}
 \newcommand{\sep}{\hspace*{.1em}}
+
+\definecolor{mygray}{gray}{0.8}
+
+\titleformat{\chapter} % command
+[display] % shape
+{\bfseries} % format
+{\fontsize{125}{50}\selectfont\textcolor{mygray}{\thechapter}} % label
+{-5em} % sep
+{
+  \Huge\hspace{.5em}
+} % before-code
+[
+  \vspace{1em}%
+] % after-code
+
 
 \begin{document}
 
