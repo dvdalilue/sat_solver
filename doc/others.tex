@@ -4,4 +4,16 @@
 Sólo los espíritus agrietados poseen aberturas al más allá.
 \end{chapquote}
 
-\lipsum[1-2]
+Adicionalmente a la implementación del polinomio de \textit{Zhegalkin}, se ha elaborado un prototipo en \textit{Haskell} del algoritmo \textit{DPLL}, usando la representación \textit{CNF} y otro para la conversión de fórmulas proposicionales a \textit{BDDs}. Esto con el objetivo de tener una prueba conceptual de soluciones que existen actualmente para \sat.
+
+\section{\textit{CNF}}
+
+Esta representación separa a una fórmula lógica en cláusulas operadas por la operación ($\land$), reduciendo el problema \sat a buscar la cláusula que no se cumpla dada cierta asignación de valores booleanos a las variables. Es evidente que se irían verificando las cláusulas hasta que alguna falle, en ese momento se sabría que esa permutación de valores para la proposición no es satisfactible. El proceso de normalización comienza obteniendo la forma normal negativa de la proposición lógica para luego aplicar la propiedad distributiva del ($\lor$) sobre ($\land$) hasta que no se pueda aplicar más. El algoritmo \textit{DPLL}, que está basado en el comportamiento de \textit{CNF}, se enuncia a continuación.
+
+\subsection{\textit{DPLL}}
+
+El algortimo \textit{Davis–Putnam–Logemann–Loveland} (\textit{DPLL}) realiza una busqueda usando \textit{backtracking}, donde en cada paso hay una toma de desición y comprobación de las cláusulas que conforman a la proposición lógica. La implementación en \textit{Haskell} reside en una función que se llama recursivamente tomando una desición en cada paso y aporvecha la evaluación perezosa para dividir desiciones de asignación binaria en una simple disyunción.
+
+\section{\textit{BDDs}}
+
+Los diagramas binarios de desición (\textit{BDDs}) es una representación útil porque resulta ser incremental, se pueden operar entre ellos y reproducir un nuevo \textit{BDD}, el cual tendrá las restricciones de ambos dependiendo del operador que se haya usado; manteniendo orden y unicidad. Comportamiento compartido con el polinomio de \textit{Zhegalkin}. Los \textit{BDDs} pueden tener muchas utilidades, ya que indican facilmente si una proposición lógica se satisface o no, asi como los valores necesarios para que se satisfga. Pero en lo que se refiere a \sat, resulta costoso mantener una estructura arborescente ordenada y dado que el objetivo es paralelizar procesos, no se consideró oportuno como una opción para implementar con OpenCL.
