@@ -6,6 +6,10 @@
 
 \vspace{3.5em}
 
-\lipsum[1-3]
+El problema \sat tiene como objetivo determinar si existe una posible permutación de valores que satisfaga una proposición booleana. Dicho problema fue el primero que se demostró ser NP-completo, no existe un algoritmo que solucione este problema de forma eficiente, es decir, en tiempo polinomial. Por otro lado, tenemos los problemas \textit{CSP}, que determinan si un conjunto finito de restricciones con un número específico de variables puede llegar a ser satisfactible, estos problemas pueden ser interpretados y reducidos a \sat. Esto nos lleva a enfocarnos en este problema tan famoso, ya que tiene el poder de aproximar distintos problemas traduciendo las condiciones a fórmulas lógicas.
+
+En la actualidad, y desde hace unos años, los algoritmos para resolver \sat están divididos en dos clases: algoritmos \textit{conflict-driven clause learning}, basados en \textit{DPLL}, y de busqueda local probabilística. Ambas tienen diferentes \textit{solvers} que implementan los algoritmos, algunos usando paralelismo, como \textit{ManySAT}. Estos algoritmos requieren conventir las fórmulas proposicionales en su, equivalente, forma normal conjuntiva (\textit{CNF}), permitiendo separar la fórmula en clausulas que faciliten la comprobación de su satisfacibilidad. Otras representaciones pueden brindar un enfoque diferente, y dependiendo del caso, estas podrían adaptarse mejor a casos específicos; así como los diagramas de desición binaria (\textit{BDD}).
+
+Esto nos motiva a usar una representación diferente y que permita tener un nuevo acercamiento a \sat. El polinomio de \textit{Zhegalkin} nos permite tener un nuevo punto de vista y su forma nos impulsa a buscar una implementación que tenga una estrategia basada en paralelismo usando recursos de la \textit{GPU}. Esta representación nos permite convertir una fórmula lógica a un polinomio en donde las variables pueden tomar valores binarios y, aprovechando esa estructura, se pueden incorporar tácticas de paralelismo usadas para polinomios con el objetivo de buscar una nueva solución a \sat.
 
 \newpage
