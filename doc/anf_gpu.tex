@@ -1,7 +1,51 @@
-\chapter{\textit{ANF} en \textit{GPU}}
+\chapter{Polinomios en \textit{GPU}}
 
 \begin{chapquote}{Andréi Tarkovski, \textit{Solaris}}
 Cuando hace viento, es fácil confundir el vaivén de un arbusto lloroso con una criatura viviente.
 \end{chapquote}
 
+Este capítulo está dedicado al enfoque que se dio para incorporar paralelismo a la traducción de formulas lógicas y construir su forma normal algebraica. A través de la plataforma OpenCL es posible usar recursos de la tarjeta gráfica para realizar computos en paralelo junto al lenguaje de progración \textit{C}. Partiendo de la solución secuencial que se ha implementado, la idea es definir una nueva versión de una función pero que opere en paralelo y al final solo se necesitaría intercambiar la función que se está llamando, la versión secuencial, por la implementación que usa la \textit{GPU}.
 
+\section{Primeros pasos en OpenCL}
+
+Para usar los recursos que provee la tarjeta gráfica, ya sea integrada o dedicada, OpenCL tiene una serie de pasos preliminares antes de ejecutar cualquier cómputo. Algunos de estos pasos son imprescindibles ya que sientan las bases para que algún extracto de código puede siquiera ser procesado. A continuación se enumeran estos pasos preliminares.
+
+\begin{enumerate}
+    \item \textbf{ID del dispositivo}: Lo primero sería obtener un identificar del dispositivo en donde se va ejecutar nuestro código, OpenCL provee una interfaz para solicitar ya sea \textit{CPU} o \textit{GPU}.
+
+    \item \textbf{Contexto}: Esta estructura se crea a partir de un ID de dispositivo, tiene como función gestionar distintas estructuras durante la ejecución del programa. Teniendo la posibilidad de delegar trabajos en uno o más dispositivos.
+
+    \item \textbf{Cola de comandos}: Para realizar distintas tareas es necesario crear una cola de comandos, las mismas pueden ser lectura o escritura de memoria y ejecución de un \textit{kernel} (ver úlitmo paso).
+
+    \item \textbf{Programa OpenCL}: OpenCL tiene especificado un lenguaje de programación que está basado en C99, en donde se definen funciones que serán (algunas no) ejecutadas por los nucleos. Estas funciones están definidas en un fichero con extensión \texttt{.cl}, el cual es leido y compilado dinámicamente.
+
+    \item \textbf{\textit{kernel} OpenCL}: Esta estructura se utiliza para referenciar a una función \textit{kernel} del programa OpenCL, así poder establecer sus parámetros y ser ejecutada en un rango específico de dimensiones. Ese rango indica la distribución de una tarea.
+\end{enumerate}
+
+\section{Función \textit{kernel} implementada}
+
+Antes de definir la implementación que se tiene actualmente, es importante recalcar que la plataforma OpenCL brinda capacidades rudimentarias para la programación en paralelo. Un problema en particular, es que a una función \textit{kernel} se le debe pasar como parámetro un espacio de memoria donde se encuentren todos los valores con los que debe operar; se le hace imposible acceder a un espacio de memoria referenciado desde otro contexto que no sea el suyo. Además no tiene la capacidad de solicitar memoria dinámicamente, este es una de las razones por las que la representación del polinomio es a través de un arreglo de arreglo de \textit{bits}.
+
+En específico se ha implementado la función \texttt{map} descrita en la sección \ref{sec:map} para multiplicar un monomio por un polinomio. Distribuyendo la tarea dado el número de monomios que este posea, delagando a los distintos nucleos que la \textit{GPU} tenga disponibles; todo esto de forma automática. No está de más decir que en la versión secuencial, se realiza este proceso de forma iterativa. En la figura \ref{fig:map_gpu} se ilustra como un monomio \textit{M} opera con un polinomio \textit{P} con \textit{k} monomios.
+
+\begin{figure}[!ht]
+\centering
+\begin{tabular}{ c c c c c }
+    \fbox{\textit{M}$\cdot$\textit{P\textsubscript{0}}} & %
+    \fbox{\textit{M}$\cdot$\textit{P\textsubscript{1}}} & %
+    \fbox{\textit{M}$\cdot$\textit{P\textsubscript{2}}} & %
+    \dots & %
+    \fbox{\textit{M}$\cdot$\textit{P\textsubscript{k}}} %
+    \\ [1ex]
+
+    \textit{GPU kernel} & %
+    \textit{GPU kernel} & %
+    \textit{GPU kernel} & %
+     & %
+    \textit{GPU kernel}
+\end{tabular}
+\caption{Función \texttt{map} en \textit{GPU}}
+\label{fig:map_gpu}
+\end{figure}
+
+Cada par de monomios se opera independientemente en un \textit{kernel} y luego se recolectan todos los cómputos en un programa anfitrión. Ya que esta es una de las operaciones más usadas durante la transformación de una fórmula lógica a un polinomio, se ha decidido usar la \textit{GPU} en este punto crucial del programa. Existen distintas estrategias que podrían usarse para aplicar paralelismo, este ha sido el primer acercamiento que se platea pero sin duda pueden implementarse otros.
