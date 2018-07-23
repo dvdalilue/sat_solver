@@ -1,14 +1,33 @@
 \chapter{Conclusiones}
 
-\begin{chapquote}{Radiohead, \textit{Lotus Flower}}
-\noindent Lentamente desplegamos\\
-Como la flor de loto\\
-Porque todo lo que quiero es la luna en una vara\\
-Bailo al rededor de la fosa\\
-La oscuridad yace abajo\\
-No puedo dejar tu vicio\\
-Solo para hinchar bruscamente tu cabeza\\
-Escucha a tu corazón
+\begin{chapquote}{Radiohead, \textit{Where I End and You Begin}}
+\noindent
+Hay una brecha de por medio\\
+Hay una brecha donde nos encontramos\\
+Donde yo termino y tu empiezas\\
+\\
+Y lo siento por nosotros\\
+Los dinosaurios vagan por la tierra\\
+El cielo se vuelve verde\\
+Donde yo termino y tu empiezas
 \end{chapquote}
 
-\lipsum[1-2]
+\sat es un problema de gran relevancia, que tiene la capacidad de modelar otro problema traduciendo las condiciones que lo definan a fórmulas lógicas. Con la versatilidad que posee, vale la pena invertir esfuerzos en buscar una buena solución para él, ya que será la solución a varias problemas.
+
+Se ha presentado una perspectiva diferente al enfoque que suele tener este problema, una representación que podría tener el potencial de mejorar el rendimiento con la disponibilidad suficiente de recursos, además de su correcta utilización, aprovechando al máximo de ellos. La solución que se ha ideado es, claramente, perfectible pero como un primer acercamiento ha resultado tener resultados que dejan la posibilidad de extender, modificar y mejorar la implementación actual.
+
+OpenCL es una plataforma que facilita el uso de la \textit{GPU} pero usarla correctamente lleva tiempo y varias pruebas para poder explotar completamente ese recurso. Los resultados obtenidos dejan acongojado a cualquiera, y sin duda esta representación puede tener otros usos, por lo que se han identificado posibles trabajos futuros que se enuncian a continuación.
+
+\section{Trabajo futuro}
+
+\subsection{Implementar otra estrategia para la multiplicación de polinomios}
+
+Siendo uno de los puntos claves del algoritmo, sería conveniente continuar el trabajo enfocándose en esta operación. Existen otros métodos para multiplicar polinomios que son más eficientes, por ejemplo, a través de la transformada rápida de Fourier, pero habría que dilucidar cómo se podría adaptar al polinomio de \textit{Zhegalkin}.
+
+\subsection{Modificar la distribución de tarea a la \textit{GPU}}
+
+La implementación actual usa la \textit{GPU} para realizar una tarea relativamente sencilla, sería prudente implementar una función que efectúe un número mayor de operaciones y distribuya las tareas de una manera diferente. OpenCL brinda la posibilidad de usar más de una dimensión para asignar tareas a los \textit{kernels} y si hay la posibilidad de usar una tarjeta gráfica de gran capacidad, puede que exista algún aceleramiento.
+
+\subsection{Usar una versión nuevo de OpenCL}
+
+La versión más reciente de OpenCL es la \texttt{2.2} y existe la posibilidad de tener una implementación en \textit{C++}, por lo que sería interesante ver que nuevas caracteristicas ofrece esa nueva versión y que facilidades brindaría usar otro lenguaje de programación. Investigar cuáles serían las posibles vías de comunicación entre los \textit{kernels} para realizar tareas más complejas y aprovechar aun más la \textit{GPU}.
