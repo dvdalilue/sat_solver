@@ -15,7 +15,7 @@
 \usepackage{titlesec}
 \usepackage{epigraph}
 \usepackage{lipsum}
-% \usepackage{setspace}
+\usepackage{setspace}
 % \usepackage{multirow}
 \usepackage{fancyhdr}
 % \usepackage{relsize}
@@ -45,13 +45,14 @@
   {\par\vspace{.5em}\normalfont\hfill--\ \chapquote@author\hspace*{\@tempdima}\par\bigskip}
 \makeatother
 
-\renewcommand{\baselinestretch}{1.2}
+% \setlength{\parskip}{.1em}
+\renewcommand{\baselinestretch}{1}
 
 \renewcommand{\lstlistlistingname}{Índice de Figuras}
 \renewcommand{\spanishlisttablename}{Índice de Tablas}
 \renewcommand\spanishtablename{Tabla}
 
-\newcommand{\sat}{\textit{SAT}}
+\newcommand{\sat}{\textit{SAT}\xspace}
 \newcommand{\sep}{\hspace*{.1em}}
 
 \begin{document}
@@ -63,9 +64,11 @@
 \include{acknowledgment}
 \include{abstract}
 
-\tableofcontents
-\listoffigures
-\listoftables
+{\setstretch{1.0}\setlength{\parskip}{0.69em}
+  \tableofcontents
+  \listoffigures
+  \listoftables
+}
 
 \newpage
 
@@ -78,16 +81,16 @@
 \include{results}
 \include{conclusions}
 
-\newpage
+% \newpage
 
-\thispagestyle{lastpage}
+% \thispagestyle{lastpage}
 
-\phantom{x}
-\vfill
-\begin{chapquote}{Ethel Watts Mumford}
-\noindent Dios nos dio a nuestros familiares; gracias a Dios podemos elegir a nuestro amigos
-\end{chapquote}
-\vfill
-\phantom{x}
+% \phantom{x}
+% \vfill
+% \begin{chapquote}{Ethel Watts Mumford}
+% \noindent Dios nos dio a nuestros familiares; gracias a Dios podemos elegir a nuestro amigos
+% \end{chapquote}
+% \vfill
+% \phantom{x}
 
 \end{document}
