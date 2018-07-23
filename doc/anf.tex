@@ -25,6 +25,8 @@ Es importante enunciar ciertas propiedades que ilustran el comportamiento de est
 \caption{Identidad de ($\oplus$)}
 \end{figure}
 
+\newpage
+
 \begin{figure}[!ht]
 \[0 \cdot P \equiv 0\]
 \caption{Elemento absorbente de ($\cdot$)}
@@ -166,7 +168,7 @@ Para ordenar un polinomio sin necesidad de tener de intercambiar \texttt{BS\_SIZ
 
 Dada la representación, eliminar un monomio se ha implementado como un desplazamiento relativo de \textit{bits} a partir del valor que se está eliminando. Esto afectaría tanto al polinomio como al arreglo auxiliar de ordenamiento. Es de esperar que la referencia a los monomios se vea alterada por lo que es necesario sustraer \texttt{1} de la posición referenciada a todos los monomios que hayan sido desplazados. En la figura \ref{fig:p_e} se puede ver el polinomio resultante luego de eliminar el último monomio.
 
-\vspace{-1.5em}
+\newpage
 
 \begin{figure}[!ht]
     \centering
@@ -184,7 +186,7 @@ Dada la representación, eliminar un monomio se ha implementado como un desplaza
 \label{fig:p_e}
 \end{figure}
 
-En la figura anterior se puede ver a dos pares de arreglos, el arreglo auxiliar y el polinomio, donde el segundo par representa el polinomio resultante después de eliminar el último monomio. El arreglo auxiliar es quien tiene la información correspondiente al posicionamiento de los monomios, por lo tanto, para mantener consistencia, las referencias cambian por el desplazamiento producido.
+Se pueden observar dos pares de arreglos, el arreglo auxiliar y el polinomio, donde el segundo par representa el polinomio resultante después de eliminar el último monomio. El arreglo auxiliar es quien tiene la información correspondiente al posicionamiento de los monomios, por lo tanto, para mantener consistencia, las referencias cambian por el desplazamiento producido.
 
 \subsection{Operaciones entre polinomios}
 
