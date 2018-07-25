@@ -1,14 +1,33 @@
-\chapter{Otras implementaciones}
+\chapter{Implementaciones clásicas}
 
 \begin{chapquote}{Emile Michel Cioran, \textit{Silogismos de la amargura}}
 Sólo los espíritus agrietados poseen aberturas al más allá.
 \end{chapquote}
 
-Adicionalmente a la implementación del polinomio de \textit{Zhegalkin}, se ha elaborado un prototipo en \textit{Haskell} del algoritmo \textit{DPLL}, usando la representación \textit{CNF} y otro para la conversión de fórmulas proposicionales a \textit{BDDs}. Esto con el objetivo de tener una prueba conceptual de soluciones que existen actualmente para \sat.
+En principio, se ha elaborado un prototipo en \textit{Haskell} del algoritmo \textit{DPLL}, usando la representación \textit{CNF} y otro para la conversión de fórmulas proposicionales a \textit{BDDs}. Ambos usando como base el mismo modelo de representación para la proposiciones lógicas usando tipos de datos algebraicos, pero realizando una un proceso de conversión diferente. Esto con el objetivo de tener una prueba conceptual de soluciones que existen actualmente para \sat.
+
+\section{Proposiciones lógicas en \textit{Haskell}}
+\label{sec:data}
+
+Como primer paso se ha decidido representar a las proposiciones lógicas en \textit{Haskell} de forma arborescente, con un tipo de dato algebraico recursivo que puede verse en la figura \ref{code:prop}. En donde se han definido operadores, que son realmente constructores del tipo, y tienen una precedencia asignada que va en concordancia con la de los operadores lógicos de conjunción (\texttt{:\&:}), disyunción (\texttt{:|:}), implicación (\texttt{:>:}) y equivalencia (\texttt{:=:}). La negación posee un constructor usual y al igual que las sentencias de la proposición. A partir de esta definición se basan todos los algoritmos que se han implementado y resulta la forma más natural de hacerlo en \textit{Haskell}.
+
+\begin{figure}
+\begin{lstlisting}[language=Haskell]
+    data Prop a
+        = (Prop a) :&: (Prop a)
+        | (Prop a) :|: (Prop a)
+        | (Prop a) :>: (Prop a)
+        | (Prop a) :=: (Prop a)
+        | Neg (Prop a)
+        | Stmnt a
+\end{lstlisting}
+\caption{Tipo de dato \textit{Haskell} para proposiciones lógicas}
+\label{code:prop}
+\end{figure}
 
 \section{\textit{CNF}}
 
-Esta representación separa a una fórmula lógica en cláusulas operadas por la operación ($\land$), reduciendo el problema \sat a buscar la cláusula que no se cumpla dada cierta asignación de valores booleanos a las variables. Es evidente que se irían verificando las cláusulas hasta que alguna falle, en ese momento se sabría que esa permutación de valores para la proposición no es satisfactible. El proceso de normalización comienza obteniendo la forma normal negativa de la proposición lógica para luego aplicar la propiedad distributiva del ($\lor$) sobre ($\land$) hasta que no se pueda aplicar más. El algoritmo \textit{DPLL}, que está basado en el comportamiento de \textit{CNF}, se enuncia a continuación.
+Esta representación separa a una fórmula lógica en cláusulas operadas por la operación ($\land$), reduciendo el problema \sat a buscar la cláusula que no se cumpla dada cierta asignación de valores booleanos a las variables. Es evidente que se irían verificando las cláusulas hasta que alguna falle, en ese momento se sabría que esa combinación de valores para la proposición no es satisfactible. El proceso de normalización comienza obteniendo la forma normal negativa de la proposición lógica para luego aplicar la propiedad distributiva del ($\lor$) sobre ($\land$) hasta que no se pueda aplicar más. El algoritmo \textit{DPLL}, que está basado en el comportamiento de \textit{CNF}, se enuncia a continuación.
 
 \subsection{\textit{DPLL}}
 
