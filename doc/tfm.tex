@@ -20,6 +20,7 @@
 \usepackage{xspace}
 \usepackage{qtree}
 \usepackage{color}
+\usepackage{tikz}
 \usepackage{cite}
 \usepackage{anyfontsize}
 
@@ -47,7 +48,8 @@
 \setlength{\parskip}{.5em}
 \renewcommand{\baselinestretch}{1.2}
 
-\renewcommand{\lstlistlistingname}{Índice de Figuras}
+\renewcommand{\lstlistlistingname}{Índice de Códigos}
+\renewcommand\lstlistingname{Código}
 \renewcommand{\spanishlisttablename}{Índice de Tablas}
 \renewcommand\spanishtablename{Tabla}
 
@@ -55,11 +57,15 @@
 \newcommand{\sep}{\hspace*{.1em}}
 
 \definecolor{mygray}{gray}{0.8}
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{pred}{rgb}{0.9,0,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
 
 \titleformat{\chapter} % command
 [display] % shape
 {\bfseries} % format
-{\fontsize{125}{50}\selectfont\textcolor{mygray}{\thechapter}} % label
+{\fontsize{125}{40}\selectfont\textcolor{mygray}{\thechapter}} % label
 {-5em} % sep
 {
   \Huge\hspace{.5em}
@@ -68,6 +74,18 @@
   \vspace{1em}%
 ] % after-code
 
+\lstset{
+    basicstyle=\footnotesize\ttfamily,
+    commentstyle=\color{pgreen},
+    showstringspaces=false,
+    keywordstyle=\color{pblue},
+    stringstyle=\color{pred},
+    rulecolor=\color{black},
+    belowskip=\medskipamount,
+    frame = trBL,%single,
+    framexleftmargin=15pt,
+    literate={á}{{\'a}}1 {í}{{\'i}}1 {é}{{\'e}}1 {ó}{{\'o}}1 {ú}{{\'u}}1 {ñ}{{\~n}}1
+}
 
 \begin{document}
 
@@ -90,9 +108,9 @@
 \mainmatter
 
 \include{introduction}
+\include{others}
 \include{anf}
 \include{anf_gpu}
-\include{others}
 \include{results}
 \include{conclusions}
 
