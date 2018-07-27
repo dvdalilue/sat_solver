@@ -22,7 +22,7 @@ Es importante enunciar ciertas propiedades que ilustran el comportamiento de est
     \text{Idempotencia de ($\cdot$):}\ & P \cdot P \equiv P\\
     \text{Eliminación de monomios por ($\oplus$):}\ & P \oplus P \equiv 0
 \end{align*}
-\caption{Propiedades del polinomio de \textit{Zhegalkin}}
+\caption{Propiedades del polinomio de \textit{Zhegalkin}.}
 \label{fig:properties}
 \end{figure}
 
@@ -45,7 +45,7 @@ Existe una correspondencia entre las operaciones booleanas ($\land$), ($\lor$), 
  $\neg P$ & $1\oplus P$  \\
  \hline
 \end{tabular}
-\caption{Tabla de equivalencia entre operaciones}
+\caption{Tabla de equivalencia entre operaciones.}
 \label{table:1}
 \end{table}
 
@@ -59,7 +59,7 @@ Se puede deducir el caso de $P \iff Q$ traduciendo a ${P\implies Q \land Q \impl
     \rightarrow\ & 1\oplus P\oplus P\cdot Q \oplus Q\oplus P\cdot Q\oplus P\cdot Q \oplus P\cdot Q \oplus P\cdot Q \oplus P\cdot Q\\
     \rightarrow\ & 1\oplus P\oplus Q
 \end{align*}
-\caption{Conversión de la equivalencia a un polinomio}
+\caption{Conversión de la equivalencia a un polinomio.}
 \label{fig:equiv}
 \end{figure}
 
@@ -69,7 +69,7 @@ En principio es necesario poder representar proposiciones lógicas y construir a
 
 \begin{figure}
     \Tree [.$\implies$ [.$\land$ [.$\implies$ P Q ] P ] Q ]
-\caption{Modus Ponens}
+\caption{Modus Ponens.}
 \label{fig:mp}
 \end{figure}
 
@@ -86,7 +86,7 @@ Ahora, se ha establecido un tipo de dato que permita contruir un polinomio con u
         | One
         | Zero
 \end{lstlisting}
-\caption{Tipo de dato \textit{Haskell} para el polinomio de \textit{Zhegalkin}}
+\caption{Tipo de dato \textit{Haskell} para el polinomio de \textit{Zhegalkin}.}
 \label{code:anf}
 \end{figure}
 
@@ -103,7 +103,7 @@ P \implies Q &= or\ 1\ (or\ P_{ANF}\ (and\ P_{ANF}\ Q_{ANF})\\
 P \iff Q &= or\ 1\ (or\ P_{ANF}\ Q_{ANF}) \\
 \neg P &= or\ 1\ P_{ANF}
 \end{align*}
-\caption{Equivalencia entre proposición lógica y el polinomio de \textit{Zhegalkin}}
+\caption{Equivalencia entre proposición lógica y el polinomio de \textit{Zhegalkin}.}
 \label{fig:convert}
 \end{figure}
 
@@ -131,7 +131,7 @@ En el caso de la figura \ref{fig:mp}, la construcción del polinomio resultante 
     \rightarrow\ & 1 \oplus P \oplus P \oplus P\cdot Q \oplus P\cdot Q\oplus P\cdot Q \oplus P\cdot Q \\
     \rightarrow\ & 1
 \end{align*}
-\caption{Construcción del polinomio para Modus Ponens}
+\caption{Construcción del polinomio para Modus Ponens.}
 \label{fig:mp_anf}
 \end{figure}
 
@@ -139,14 +139,7 @@ En el caso de la figura \ref{fig:mp}, la construcción del polinomio resultante 
 
 Incorporar orden al polinomio es útil si se quiere reducir su estructura, esto es vital porque esta representación tiende a crecer rápida y desmesuradamente. Por lo tanto, la implementación en \textit{Haskell}, define un orden estructural mediante la clase de tipo \texttt{Ord}. Esto nos permite aprovechar funciones previamente especificadas en el \textit{hackage} \texttt{Data.List}, en particular \texttt{sort}. Cuando se tiene ordenado el polinomio, es posible reducir el número de monomios usando la propiedad de la figura \ref{fig:properties}, ya que los monomios iguales estarán posicionados contiguamente.
 
-% \textbf{ARREGLAR}
-
 Es importante acotar que, al momento de ordenar el polinomio, existe un orden externo y otro más interno para los monomios. Estos últimos, asumiendo que están compuestos solo por variables y se ha aplicado la propiedad distributiva para cumplir esta condición, estarán ordenanos lexicográficamente. En cuanto al orden del polinomio, este compara y ordena los monomios según su tamaño, y en caso de ser iguales, el orden tmabién es lexicográfico.
-
-% \begin{enumerate}
-%     \item Cuando se comparan dos polinomios, se asume que los monomios estan ordenados y, quien posea el menor número de monomios será el menor.
-%     \item En el caso de que posean el mismo número de monomios, 
-% \end{enumerate}
 
 \section{Implementación en \textit{C}}
 
@@ -163,7 +156,7 @@ Representar un monomio como un vector de \textit{bits} tiene ventajas con respec
     $\fbox{0} \sep \fbox{1} \sep \fbox{0} \sep \fbox{0} \sep \fbox{1} \sep \fbox{0}$\ \dots\ \\
     \noindent
     $\fbox{0} \sep \fbox{0} \sep \fbox{1} \sep \fbox{0} \sep \fbox{0} \sep \fbox{0}$\ \dots\
-\caption{Monomios como vector de \textit{bits}}
+\caption{Monomios como vector de \textit{bits}.}
 \label{fig:mbs}
 \end{figure}
 
@@ -176,7 +169,7 @@ Usando los monomios de la parte anterior y fijando el tamaño de los mismos, es 
 \begin{figure}
     \centering\noindent
     $\fcolorbox{red}{white}{0} \sep \fcolorbox{red}{white}{1} \sep \fcolorbox{red}{white}{0} \sep \fcolorbox{red}{white}{0} \sep \fcolorbox{red}{white}{0} \sep \fcolorbox{red}{white}{0} \sep \fcolorbox{blue}{white}{0} \sep \fcolorbox{blue}{white}{1} \sep \fcolorbox{blue}{white}{0} \sep \fcolorbox{blue}{white}{0} \sep \fcolorbox{blue}{white}{1} \sep \fcolorbox{blue}{white}{1} \sep \fcolorbox{green}{white}{0} \sep \fcolorbox{green}{white}{0} \sep \fcolorbox{green}{white}{0} \sep \fcolorbox{green}{white}{0} \sep \fcolorbox{green}{white}{1} \sep \fcolorbox{green}{white}{1}$\ \dots\ \\
-\caption{Polinomio como vector de vector de \textit{bits}}
+\caption{Polinomio como vector de vector de \textit{bits}.}
 \label{fig:pbs}
 \end{figure}
 
@@ -204,7 +197,7 @@ Dada la representación, eliminar un monomio se ha implementado como un desplaza
     \noindent
     $\fcolorbox{red}{white}{0} \sep \fcolorbox{red}{white}{1} \sep \fcolorbox{red}{white}{0} \sep \fcolorbox{red}{white}{0} \sep \fcolorbox{red}{white}{0} \sep \fcolorbox{red}{white}{0} \sep \fcolorbox{blue}{white}{0} \sep \fcolorbox{blue}{white}{1} \sep \fcolorbox{blue}{white}{0} \sep \fcolorbox{blue}{white}{0} \sep \fcolorbox{blue}{white}{1} \sep \fcolorbox{blue}{white}{1}$
     \end{minipage}
-\caption{Eliminación de monomio}
+\caption{Eliminación de monomio.}
 \label{fig:p_e}
 \end{figure}
 

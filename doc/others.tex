@@ -21,7 +21,7 @@ Como primer paso se ha decidido representar a las proposiciones lógicas en \tex
         | Neg (Prop a)
         | Stmnt a
 \end{lstlisting}
-\caption{Tipo de dato \textit{Haskell} para proposiciones lógicas}
+\caption{Tipo de dato \textit{Haskell} para proposiciones lógicas.}
 \label{code:prop}
 \end{figure}
 
@@ -47,7 +47,7 @@ El proceso de normalización comienza obteniendo la forma normal negativa (\text
         end case
     end function
 \end{lstlisting}
-\caption{Algoritmo para obetener la \textit{NNF}}
+\caption{Algoritmo para obetener la \textit{NNF}.}
 \label{code:nnf}
 \end{figure}
 
@@ -64,7 +64,7 @@ El proceso de normalización comienza obteniendo la forma normal negativa (\text
         end case
     end function
 \end{lstlisting}
-\caption{Algoritmo para obetener la \textit{CNF}}
+\caption{Algoritmo para obetener la \textit{CNF}.}
 \label{code:cnf}
 \end{figure}
 
@@ -81,7 +81,7 @@ El proceso de normalización comienza obteniendo la forma normal negativa (\text
         end case
     end function
 \end{lstlisting}
-\caption{Algoritmo para obetener la \textit{CNF} entre dos proposiones}
+\caption{Algoritmo para obetener la \textit{CNF} entre dos proposiones.}
 \label{code:distr}
 \end{figure}
 
@@ -108,14 +108,96 @@ En la figura \ref{code:dpll} se muestra un código representativo de lo que suce
                         dpll ((s,False):hsh) ss nps
             Nothing -> False
 \end{lstlisting}
-\caption{Algoritmo DPLL en \textit{Haskell}}
+\caption{Algoritmo DPLL en \textit{Haskell}.}
 \label{code:dpll}
 \end{figure}
 
 \section{\textit{BDDs}}
 \label{sec:bdds}
 
-Los diagramas binarios de desición (\textit{BDDs}) es una representación útil porque resulta ser incremental, se pueden operar entre ellos y reproducir un nuevo \textit{BDD}, el cual combinará la semántica de ambos dependiendo del operador que se haya usado; manteniendo orden y unicidad. Comportamiento compartido con el polinomio de \textit{Zhegalkin}. Para construir un \textit{BDD} a partir de una proposición booleana, usando el mismo tipo de dato definido en la figura \ref{code:prop}, se ha definido un tipo de dato que se puede ver en la figura \ref{code:bdds}, además se cuenta con una serie de operadores booleanos para operar con \textit{BDDs} y así poder tener una construcción incremental a partir de una fórmula lógica.
+Los diagramas binarios de desición (\textit{BDDs}) son una representación que se asemeja a un grafo dirigido acíclico, y resultan útiles porque tienen un comportamiento incremental. Se puede operar entre ellos y producir un nuevo \textit{BDD}, el cual unirá las proposiciones que representen los \textit{BDDs} originales, manteniendo orden y unicidad. Característica compartido con el polinomio de \textit{Zhegalkin}, lo cual veremos en el siguiente capítulo. Esta comportamiento es consecuencia de estructuras \textbf{normalizadas} y únicas para un determinado conjunto de condiciones. Esto tiene una ventaja cuando se va construyendo a partir de restricciones que van incorporándose a medida que el modelo del problema lo necesite. Sin necesidad de contruir nuevamente la estructura, si se incluye otra restricción al problema que se desea modelar.
+
+\begin{figure}
+    \begin{minipage}{0.45\textwidth}
+    \centering
+    \begin{tikzpicture}
+    [edge from parent/.style={draw=none}]
+    \node[circle,draw](x){$x$}[level distance=5ex]
+    child{node[circle,draw](y){$y$}[sibling distance=2em]
+      child{node[draw](y0){$0$}}
+      child{node[draw](y1){$1$}}
+    }
+    child{node[circle,draw](z){$z$} [sibling distance=2em]
+      child{node[draw](z1){$1$}}
+      child{node[draw](z0){$0$}}
+    };
+    \draw[dashed] (x) -- (z);
+    \draw[dashed] (y) -- (y1);
+    \draw[dashed] (z) -- (z0);
+    \draw[solid] (x) -- (y);
+    \draw[solid] (y) -- (y0);
+    \draw[solid] (z) -- (z1);
+    \end{tikzpicture}
+\caption{Ejemplo 1 de \textit{BDD}.}
+\label{fig:bdd_ex_1}
+\end{minipage}\hfill
+\begin{minipage}{0.45\textwidth}
+    \centering
+    \begin{tikzpicture}
+    [edge from parent/.style={draw=none}]
+    \node[circle,draw](w){$w$}[level distance=5ex]
+        child{node[circle,draw](z){$z$} [sibling distance=2em]
+            child{node[draw](z1){$1$}}
+            child{node[draw](z0){$0$}}}
+        child{node[draw](w0){$0$}};
+    \draw[dashed] (w) -- (w0);
+    \draw[dashed] (z) -- (z0);
+    \draw[solid] (x) -- (y);
+    \draw[solid] (z) -- (z1);
+    \end{tikzpicture}
+\caption{Ejemplo 2 de \textit{BDD}.}
+\label{fig:bdd_ex_2}
+\end{minipage}
+\end{figure}
+
+
+En la figura \ref{fig:bdd_ex_1} se puede ver un ejemplo de un \textit{BDD} construido a partir de la proposición $(x \land \neg y) \lor (\neg x \land z)$, es importante resaltar que se respeta el orden $x < y < z$. Si se tiene otro \textit{BDD}, como el que muestra la figura \ref{fig:bdd_ex_2}, que representa a la proposición $w \land z$ y se operan ambos por el operador de conjunción, el \textit{BDD} resultante sería el que se muestra en la figura \ref{fig:bdd_r}.
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}
+    [edge from parent/.style={draw=none}]
+    \node[circle,draw](w){$w$}[level distance=5ex][sibling distance=5em]
+        child{node[circle,draw](x){$x$} [level distance=5ex][sibling distance=5em]
+            child{node[circle,draw](y){$y$} [level distance=5ex][sibling distance=4em]
+                child{node[draw](y0){$0$}}
+                child{node[circle,draw](z){$z$} [sibling distance=2em]
+                    child{node[draw](z1){$1$}}
+                    child{node[draw](z0){$0$}};
+                };
+            }
+            child{node[circle,draw](zz){$z$} [sibling distance=2em]
+                child{node[draw](zz1){$1$}}
+                child{node[draw](zz0){$0$}};
+            }
+        }
+        child{node[draw](w0){$0$}};
+    \draw[dashed] (w) -- (w0);
+    \draw[dashed] (x) -- (zz);
+    \draw[dashed] (z) -- (z0);
+    \draw[dashed] (zz) -- (zz0);
+    \draw[dashed] (y) -- (z);
+    \draw[solid] (w) -- (x);
+    \draw[solid] (x) -- (y);
+    \draw[solid] (y) -- (y0);
+    \draw[solid] (z) -- (z1);
+    \draw[solid] (zz) -- (zz1);
+    \end{tikzpicture}
+\caption{\textit{BDD} resultante de la conjunción.}
+\label{fig:bdd_r}
+\end{figure}
+
+Para construir un \textit{BDD} a partir de una proposición booleana, usando el mismo tipo de dato definido en la figura \ref{code:prop}, se ha definido un tipo de dato que se puede ver en la figura \ref{code:bdds}, además se cuenta con una serie de operadores booleanos para operar con \textit{BDDs} y así poder tener una construcción incremental a partir de una fórmula lógica.
 
 \begin{figure}
 \begin{lstlisting}[language=Haskell]
@@ -125,12 +207,11 @@ data BDD a where
     No :: Ord a => BDD a
 deriving instance Eq (BDD a)
 \end{lstlisting}
-\caption{Tipo de dato para \textit{BDDs} en \textit{Haskell}}
+\caption{Tipo de dato para \textit{BDDs} en \textit{Haskell}.}
 \label{code:bdds}
 \end{figure}
 
 El tipo de dato para los \textit{BDDs} es arborescente y posee tres constructores de tipo, dos para los casos base y uno que es recursivo, donde también se almacena la proposición que representa. Al final, esa proposición, será una sentencia a cualquier nivel del árbol. Los operadores para este tipo de dato son un equivalente para la negación ($\neg$), conjunción ($\land$), disyunción ($\lor$), implicación ($\implies$) y equivalencia ($\iff$). Estos se pueden muestran en las figuras \ref{code:bdd_neg}, \ref{code:bdd_and}, \ref{code:bdd_or}, \ref{code:bdd_implies} y \ref{code:bdd_eq} respectivamente.
-
 
 La función \texttt{apply} que se muestra en la figura \ref{code:bdd_apply} efectúa una comparación de las proposiciones almacenadas por cada \textit{BDD}, le da prioridad a la menor y reducirá en el caso de que la operación encuentre la oportunidad de eliminar un árbol. Esto es posible ya que si dos subárboles son iguales para una misma sentencia, las desiciones serán iguales independientemente de que valor tome esa sentencia y por eso es equivalente a un solo subárbol.
 
@@ -143,7 +224,7 @@ neg No = Yes
 neg Yes = No
 neg (Decision v y n) = Decision v (neg y) (neg n)
 \end{lstlisting}
-\caption{Operación de negación para \textit{BDDs}}
+\caption{Operación de negación para \textit{BDDs}.}
 \label{code:bdd_neg}
 \end{figure}
 
@@ -156,7 +237,7 @@ and Yes d = d
 and d Yes = d
 and bdd1 bdd2 = apply and bdd1 bdd2
 \end{lstlisting}
-\caption{Operación de conjunción para \textit{BDDs}}
+\caption{Operación de conjunción para \textit{BDDs}.}
 \label{code:bdd_and}
 \end{figure}
 
@@ -169,7 +250,7 @@ or No d = d
 or d No = d
 or bdd1 bdd2 = apply or bdd1 bdd2
 \end{lstlisting}
-\caption{Operación de disyunción para \textit{BDDs}}
+\caption{Operación de disyunción para \textit{BDDs}.}
 \label{code:bdd_or}
 \end{figure}
 
@@ -180,7 +261,7 @@ implies No  _ = Yes
 implies Yes d = d
 implies bdd1 bdd2 = or (neg bdd1) bdd2
 \end{lstlisting}
-\caption{Operación de implicación para \textit{BDDs}}
+\caption{Operación de implicación para \textit{BDDs}.}
 \label{code:bdd_implies}
 \end{figure}
 
@@ -193,7 +274,7 @@ eq Yes d = d
 eq d Yes = d
 eq bdd1 bdd2 = apply eq bdd1 bdd2
 \end{lstlisting}
-\caption{Operación de equivalencia para \textit{BDDs}}
+\caption{Operación de equivalencia para \textit{BDDs}.}
 \label{code:bdd_eq}
 \end{figure}
 
@@ -221,7 +302,7 @@ apply op bdd1@(Decision x1 y1 n1) bdd2@(Decision x2 y2 n2)
         in
             if ldd == rdd then ldd else Decision x1 ldd rdd
 \end{lstlisting}
-\caption{Función \texttt{apply} para \textit{BDDs}}
+\caption{Función \texttt{apply} para \textit{BDDs}.}
 \label{code:bdd_apply}
 \end{figure}
 

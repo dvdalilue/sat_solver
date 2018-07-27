@@ -19,7 +19,7 @@ Los problemas de satisfacción de restricciones (\textit{CSP}) son preguntas for
 
 \subsection{Coloración de grafos}
 
-un ejemplo de ello se puede ver en las figuras \ref{fig:g_col_csp} y \ref{fig:g_col_sat}, donde se muestra el mismo problema de coloración del grafo en la figura \ref{fig:graph} modelado de forma diferente y como resultado posible el grafo coloreado quedaría como se puede ver en la figura \ref{fig:graph_color}.
+Los problemas de coloración de grafos se pueden definir como un problema para etiquetar los vértices de un grafo, en donde ningún par de nodos adyancetes puede tener el mismo color. Un ejemplo de este tipo de problemas comienza con el grafo de la figura \ref{fig:graph}, este está sujeto a las restricciones que se muestran en la figura \ref{fig:g_col_csp} y es posible traducir esas condiciones a \sat. Ese nuevo modelo resultaría en una fórmula lógica, la cual puede verse en la figura \ref{fig:g_col_sat} y un posible coloreado del grafo pudiera ser el de la figura \ref{fig:graph_color}.
 
 \begin{figure}
 \centering
@@ -51,7 +51,7 @@ un ejemplo de ello se puede ver en las figuras \ref{fig:g_col_csp} y \ref{fig:g_
 
   \draw (n5) -- (n6);
 \end{tikzpicture}
-\caption{Grafo sin colorear}
+\caption{Grafo sin colorear.}
 \label{fig:graph}
 \end{minipage}\hfill
 \begin{minipage}{0.5\textwidth}
@@ -82,7 +82,7 @@ un ejemplo de ello se puede ver en las figuras \ref{fig:g_col_csp} y \ref{fig:g_
 
   \draw (n5) -- (n6);
 \end{tikzpicture}
-\caption{Grafo coloreado}
+\caption{Grafo coloreado.}
 \label{fig:graph_color}
 \end{minipage}
 \end{figure}
@@ -97,7 +97,7 @@ un ejemplo de ello se puede ver en las figuras \ref{fig:g_col_csp} y \ref{fig:g_
     & D \neq E \land D \neq F\\
     & E \neq F
 \end{align*}
-\caption{Restricciones para la coloración del grafo}
+\caption{Restricciones para la coloración del grafo.}
 \label{fig:g_col_csp}
 \end{figure}
 
@@ -110,7 +110,7 @@ un ejemplo de ello se puede ver en las figuras \ref{fig:g_col_csp} y \ref{fig:g_
     \neg(ab \land bb)\ \land \neg(ab \land cb)\ \land \neg(ab \land db)\ \land \neg(ab \land eb)\ \land\\
     \vdots
 \end{align*}
-\caption{Restricciones para la coloración del grafo en \sat}
+\caption{Restricciones para la coloración del grafo en \sat.}
 \label{fig:g_col_sat}
 \end{figure}
 
@@ -125,7 +125,7 @@ Otro ejemplo sería el problema de las ocho reinas, el cual resuleve el posicion
 \newgame
 \fenboard{q7/6q1/4q3/7q/1q6/3q4/5q2/2q5 w - - 0 20}
 \showboard
-\caption{Solución al problema de las ocho reinas}
+\caption{Solución al problema de las ocho reinas.}
 \label{fig:queens}
 \end{figure}
 
@@ -139,7 +139,7 @@ Las restricciones que modelarían este problema como un \textit{CSP} serían las
     \forall i,j \in Q \cdot x_i - x_j \neq i - j\\
     \forall i,j \in Q \cdot x_j - x_i \neq i - j
 \end{align*}
-\caption{Restricciones del problema de las ocho reinas como \textit{CSP}}
+\caption{Restricciones del problema de las ocho reinas como \textit{CSP}.}
 \label{fig:queens_csp}
 \end{figure}
 
@@ -158,7 +158,7 @@ En el caso de \sat, la modelación se puede ver en la figura \ref{fig:queens_sat
     \neg(q_{22} \land q_{33})\ \land\dots\land\neg(q_{22} \land q_{44})\ \land\\
     \vdots
 \end{align*}
-\caption{Modelazión del problema de las ocho reinas para \sat}
+\caption{Modelazación del problema de las ocho reinas para \sat.}
 \label{fig:queens_sat}
 \end{figure}
 
@@ -187,7 +187,7 @@ Este problema establece una serie de restricciones sobre una matriz de $9\times9
       \setrow { }{1}{ }  {9}{ }{7}  { }{6}{ }
     \end{scope}
   \end{tikzpicture}
-  \caption{Ejemplo de un problema sudoku}
+  \caption{Ejemplo de un problema sudoku.}
   \label{fig:sudoku}
 \end{figure}
 
@@ -195,4 +195,4 @@ Se puede modelar como un \textit{CSP} estableciendo un dominio para los valores 
 
 \section{Estructura del trabajo}
 
-En los siguientes capítulos se describirá el proceso de implementación a una solución a \sat, comenzando por definir detalladamente esta representación junto a las implementaciones que se desarrollaron. Siguiendo con el diseño de una implementación que aproveche los recursos de la \textit{GPU}, a través de la plataforma OpenCL. Es importante resaltar, que para este trabajo trabajo se ha usado la versión \texttt{1.2}; en todo momento que se refiera a esta plataforma, la versión es tácita. También se describen otros soluciones que se implementaron, seguidas de los resultados experimentales obtenidos y un breve análisis de los mismos. Finalizando con las conclusiones y posibles trabajos futuros.
+En los siguientes capítulos se describirá el proceso de implementación para una solución de \sat, comenzando por definir detalladamente las representaciones que se implementaron y estructuras clásicas para este problema. Después se describirá el polinomio de \textit{Zhegalkin}, asi como su definición e implementaciones en los lenguajes de programación utilizados. Profundizando en los aspectos claves de esta representación e identificando puntos esenciales para poder seguir con el diseño de una implementación que aproveche los recursos de la \textit{GPU}; a través de la plataforma OpenCL. Es importante resaltar, que para este trabajo se ha usado la versión \texttt{1.2}; en todo momento que se refiera a esta plataforma, la versión es tácita. También se describen los resultados experimentales obtenidos y un breve análisis de los mismos. Finalizando con las conclusiones y posibles trabajos futuros. Antes que nada, toda la implementación y desarrollo de este trabajo se encuentra en un repositorio en GitHub\cite{Lilue2018}, en caso de que se desee revisar con más detalle la implementación.
