@@ -113,6 +113,7 @@ En la figura \ref{code:dpll} se muestra un código representativo de lo que suce
 \end{figure}
 
 \section{\textit{BDDs}}
+\label{sec:bdds}
 
 Los diagramas binarios de desición (\textit{BDDs}) es una representación útil porque resulta ser incremental, se pueden operar entre ellos y reproducir un nuevo \textit{BDD}, el cual combinará la semántica de ambos dependiendo del operador que se haya usado; manteniendo orden y unicidad. Comportamiento compartido con el polinomio de \textit{Zhegalkin}. Para construir un \textit{BDD} a partir de una proposición booleana, usando el mismo tipo de dato definido en la figura \ref{code:prop}, se ha definido un tipo de dato que se puede ver en la figura \ref{code:bdds}, además se cuenta con una serie de operadores booleanos para operar con \textit{BDDs} y así poder tener una construcción incremental a partir de una fórmula lógica.
 
