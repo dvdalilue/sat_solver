@@ -24,11 +24,11 @@ Para usar los recursos que provee la tarjeta gráfica, ya sea integrada o dedica
 
 \section{Función \textit{kernel} implementada}
 
-Antes de definir la implementación que se tiene actualmente, es importante recalcar que la plataforma OpenCL brinda capacidades rudimentarias para la programación en paralelo. Un problema en particular, es que a una función \textit{kernel} se le debe pasar como parámetro un espacio de memoria donde se encuentren todos los valores con los que debe operar; se le hace imposible acceder a un espacio de memoria referenciado desde otro contexto que no sea el suyo. Además no tiene la capacidad de solicitar memoria dinámicamente, este es una de las razones por las que la representación del polinomio es a través de un arreglo de arreglo de \textit{bits}.
+Antes de definir la implementación que se tiene actualmente, es importante recalcar que la plataforma OpenCL brinda capacidades rudimentarias para la programación en paralelo. Un problema en particular, es que a una función \textit{kernel} se le debe pasar como parámetro un espacio de memoria donde se encuentren todos los valores con los que debe operar; se le hace imposible acceder a un espacio de memoria referenciado desde otro contexto que no sea el suyo. Además no tiene la capacidad de solicitar memoria dinámicamente, este es una de las razones por las que la representación del polinomio es a través de un vetor de vetores de \textit{bits} concatenados.
 
 En específico se ha implementado la función \texttt{map} descrita en la sección \ref{sec:map} para multiplicar un monomio por un polinomio. Distribuyendo la tarea dado el número de monomios que este posea, delagando a los distintos nucleos que la \textit{GPU} tenga disponibles; todo esto de forma automática. No está de más decir que en la versión secuencial, se realiza este proceso de forma iterativa. En la figura \ref{fig:map_gpu} se ilustra como un monomio \textit{M} opera con un polinomio \textit{P} con \textit{k} monomios.
 
-\begin{figure}[!ht]
+\begin{figure}
 \centering
 \begin{tabular}{ c c c c c }
     \fbox{\textit{M}$\cdot$\textit{P\textsubscript{0}}} & %
@@ -48,4 +48,55 @@ En específico se ha implementado la función \texttt{map} descrita en la secci�
 \label{fig:map_gpu}
 \end{figure}
 
+En la figura \ref{code:kernel_gpu} se puede ver la función \textit{kernel} implementada. Esta función declara dos parámetros que son globales para todas unidades de cómputo que operan sobre el rango de dimensiones que se les haya indicado a la \textit{GPU}. El primero es el vector de \textit{bits} que se está multiplicando y el segundo, el polinomio. Siendo este último un parámetro de retorno, y dando la posibilidad de modificarlo cuando carece de la palabra \texttt{const}.
+
+Para obtener la posición con la que trabaja la unidad, se debe llamar a la función \texttt{get\_global\_id} con \texttt{0} como parámetro, ya que solo se está usando una dimensión. En el caso de usar más dimensiones, se llamaría a esta función con \texttt{1, 2, ...}. La operación de \textit{and} para dos monomios es simplemente operar a nivel de \textit{bits} lógicamente los valores que haya en cada posición de los vectores con el operador \textit{OR} (\texttt{|}).
+
+\begin{figure}
+\begin{lstlisting}[language=C]
+__kernel void map_anf_gpu(__global const char *bit_string,
+                          __global char *polynomial) {
+    int i = get_global_id(0) * BS_SIZE;
+    int k = 0;
+
+    while (k < BS_SIZE) {
+        polynomial[i + k] = bit_string[k] | polynomial[i + k];
+        k++;
+    }
+}
+\end{lstlisting}
+\caption{Función \textit{kernel}}
+\label{code:kernel_gpu}
+\end{figure}
+
 Cada par de monomios se opera independientemente en un \textit{kernel} y luego se recolectan todos los cómputos en un programa anfitrión. Ya que esta es una de las operaciones más usadas durante la transformación de una fórmula lógica a un polinomio, se ha decidido usar la \textit{GPU} en este punto crucial del programa. Existen distintas estrategias que podrían usarse para aplicar paralelismo, este ha sido el primer acercamiento que se platea pero sin duda pueden implementarse otros.
+
+\begin{figure}
+    \centering
+    \begin{minipage}[c][4.2cm][b]{.58\textwidth}
+    \noindent
+    $\fbox{1} \sep \fbox{0} \sep \fbox{1}$\\
+    \noindent
+    $\fcolorbox{red}{white}{0} \sep \fcolorbox{red}{white}{0} \sep \fcolorbox{red}{white}{0} \sep \fcolorbox{blue}{white}{1} \sep \fcolorbox{blue}{white}{0} \sep \fcolorbox{blue}{white}{0} \sep \fcolorbox{green}{white}{0} \sep \fcolorbox{green}{white}{0} \sep \fcolorbox{green}{white}{1}$\\
+
+    \vspace{1em}
+
+    \noindent\hspace{3.6em}\textit{kernel}\hspace{3.4em}\textit{kernel}\hspace{3.4em}\textit{kernel}\\
+    \centering
+    % \noindent
+    \texttt{Paso 1}
+    $\fcolorbox{red}{gray!20}{1} \sep \fcolorbox{red}{white}{0} \sep \fcolorbox{red}{white}{0}$ \hspace{2em} $\fcolorbox{blue}{gray!20}{1} \sep \fcolorbox{blue}{white}{0} \sep \fcolorbox{blue}{white}{0}$ \hspace{2em} $\fcolorbox{green}{gray!20}{1} \sep \fcolorbox{green}{white}{0} \sep \fcolorbox{green}{white}{1}$\\
+
+    % \noindent
+    \texttt{Paso 2}
+    $\fcolorbox{red}{gray!20}{1} \sep \fcolorbox{red}{gray!20}{0} \sep \fcolorbox{red}{white}{0}$ \hspace{2em} $\fcolorbox{blue}{gray!20}{1} \sep \fcolorbox{blue}{gray!20}{0} \sep \fcolorbox{blue}{white}{0}$ \hspace{2em} $\fcolorbox{green}{gray!20}{1} \sep \fcolorbox{green}{gray!20}{0} \sep \fcolorbox{green}{white}{1}$\\
+
+    % \noindent
+    \texttt{Paso 3}
+    $\fcolorbox{red}{gray!20}{1} \sep \fcolorbox{red}{gray!20}{0} \sep \fcolorbox{red}{gray!20}{1}$ \hspace{2em} $\fcolorbox{blue}{gray!20}{1} \sep \fcolorbox{blue}{gray!20}{0} \sep \fcolorbox{blue}{gray!20}{1}$ \hspace{2em} $\fcolorbox{green}{gray!20}{1} \sep \fcolorbox{green}{gray!20}{0} \sep \fcolorbox{green}{gray!20}{1}$
+    \end{minipage}
+\caption{Multiplicación de un monomio por un polinomio en \textit{GPU}}
+\label{fig:map_gpu_kernels}
+\end{figure}
+
+Una representación visual de lo que ocurre en la \textit{GPU} se puede ver en la figura \ref{fig:map_gpu_kernels}, donde se ejecuta la función \textit{kernel} a un polinomio en conjunto con un vector de \textit{bits}, es decir, el monomio. En principio se tienen los parámetros globlales y accesibles para todas las unidades de cómputo, a ellas se les ha asignado una sección determinada del polinomio y en cada paso de la multiplicación entre los monomios se puede ver que se realiza de manera simultanea; siendo este el caso más idoneo. Además, el polinomio resultante no está reducido, y en otros casos pudiera perder el orden, por lo que se deben aplicar las propiedades de la figura \ref{fig:properties} u ordenar, a conveniencia, para retornar el polinomio correcto. El cual sería $\fcolorbox{black}{white}{1} \sep \fcolorbox{black}{white}{0} \sep \fcolorbox{black}{white}{1}$.
