@@ -3,7 +3,9 @@
 \usepackage[utf8]{inputenc}
 \usepackage[spanish]{babel}
 \usepackage[svgnames]{xcolor}
+\usepackage[nottoc]{tocbibind}
 \usepackage[T1]{fontenc}
+\usepackage{anyfontsize}
 % \usepackage[titletoc]{appendix}
 \usepackage{amsmath,amsfonts,amsthm}
 \usepackage{enumitem}
@@ -22,7 +24,21 @@
 \usepackage{color}
 \usepackage{tikz}
 \usepackage{cite}
-\usepackage{anyfontsize}
+\usepackage{skak}
+
+\newcounter{row}
+\newcounter{col}
+
+\newcommand\setrow[9]{
+  \setcounter{col}{1}
+  \foreach \n in {#1, #2, #3, #4, #5, #6, #7, #8, #9} {
+    \edef\x{\value{col} - 0.5}
+    \edef\y{9.5 - \value{row}}
+    \node[anchor=center] at (\x, \y) {\n};
+    \stepcounter{col}
+  }
+  \stepcounter{row}
+}
 
 \fancypagestyle{pagebottom}{
   \renewcommand{\headrulewidth}{0pt}
@@ -97,7 +113,7 @@
 \include{abstract_es}
 \include{abstract_en}
 
-{\setstretch{1.0}\setlength{\parskip}{0.6em}
+{\setstretch{1.0}\setlength{\parskip}{0.5em}
   \tableofcontents
   \listoffigures
   \listoftables
@@ -114,6 +130,9 @@
 \include{results}
 \include{conclusions}
 
+\bibliographystyle{unsrt}
+\bibliography{tfm}
+
 % \newpage
 
 % \thispagestyle{lastpage}
@@ -121,7 +140,7 @@
 % \phantom{x}
 % \vfill
 % \begin{chapquote}{Ethel Watts Mumford}
-% \noindent Dios nos dio a nuestros familiares; gracias a Dios podemos elegir a nuestro amigos
+% \noindent Dios nos ha dado a nuestros parientes; gracias a Dios podemos elegir a nuestro amigos
 % \end{chapquote}
 % \vfill
 % \phantom{x}
