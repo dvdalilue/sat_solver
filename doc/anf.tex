@@ -8,11 +8,11 @@ En este capítulo se expondrá una forma poco usual de expresar formulas lógica
 
 \section{Definición}
 
-\emph{Ivan Ivanovich Zhegalkin} introdujo en 1927 una forma de representar operaciones en álgebra booleana. El polinomio de \textit{Zhegalkin}, conocido también con el nombre de \textbf{forma normal algebraica} (\textit{ANF}), es un caso especial de los polinomios usuales en algebra pero este opera usando solamente los enteros $0$ y $1$, es decir, el anillo de los números enteros modulo 2: $\mathbb{Z}_2$. El mismo está constituida por un número finito de monomios operados con las operaciones suma (+) y multiplicación ($\times$) que, para nuestro caso particular, los llamaremos \textit{XOR} ($\oplus$) y \textit{AND} ($\cdot$) teniendo una interpretación lógica y dando como resultado $0$ o $1$; siendo estos valores posibles monomios. Además, el complemento de una variable o monomio no se expresa con un operador, sino a través de la adición del $1$ al mismo.
+\emph{Ivan Ivanovich Zhegalkin} introdujo en 1927 una forma de representar operaciones en álgebra booleana\cite{zhegalkin}. El polinomio de \textit{Zhegalkin}, conocido también con el nombre de \textbf{forma normal algebraica} (\textit{ANF}), es un caso especial de los polinomios usuales en algebra pero este opera usando solamente los enteros $0$ y $1$, es decir, el anillo de los números enteros modulo 2: $\mathbb{Z}_2$. El mismo está constituida por un número finito de monomios operados con las operaciones suma (+) y multiplicación ($\times$) que, para nuestro caso particular, los llamaremos \textit{XOR} ($\oplus$) y \textit{AND} ($\cdot$) teniendo una interpretación lógica y dando como resultado $0$ o $1$; siendo estos valores posibles monomios. Además, el complemento de una variable o monomio no se expresa con un operador, sino a través de la adición del $1$ al mismo.
 
 \subsection{Propiedades de los operadores}
 
-Es importante enunciar ciertas propiedades que ilustran el comportamiento de esta representación. Además de ser útiles, y necesarias, al momento de implementar una solución, se usan para reducir los polinomios y mantener la forma normal algebraica.
+Es importante enunciar ciertas propiedades que ilustran el comportamiento de esta representación\cite{zhegalkin}. Además de ser útiles, y necesarias, al momento de implementar una solución, se usan para reducir los polinomios y mantener la forma normal algebraica.
 
 \begin{figure}
 \begin{align*}
