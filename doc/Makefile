@@ -8,4 +8,4 @@ all:
 	pdflatex tfm
 
 clean:
-	rm *.aux *.log *.toc *.lof *.lot *.out
+	rm *.aux *.log *.toc *.lof *.lot *.out *.bbl *.blg *.txt
