@@ -93,7 +93,7 @@ Ahora, se ha establecido un tipo de dato que permita contruir un polinomio con u
 \subsection{De proposición lógica a polinomio de \textit{Zhegalkin}}
 \label{sec:fromProp}
 
-Para construir el polinomio de \textit{Zhegalkin} a partir de una formula proposicional, se usa la equivalencia de la tabla \ref{table:1} mientras se recorre recursivamente la estructura arborescente y aplicando las distintas propiedades. Esta equivalencia se ilustra en la figura \ref{fig:convert}, suponiendo que se tienen dos funciones, \textit{and} y \textit{or}, descritas a continuación.
+Para construir el polinomio de \textit{Zhegalkin} a partir de una formula proposicional, se usa la equivalencia de la tabla \ref{table:1} mientras se recorre recursivamente la estructura arborescente y aplicando las distintas propiedades. Esta equivalencia se ilustra en la figura \ref{fig:convert}, suponiendo que se tienen dos funciones, \textit{and} y \textit{or}, descritas a continuación. Estas funciones son las que permiten tener la capacidad de una contrucción incremental de los polinomios, ya que preservan las condiciones escenciales de la estructura, tal como se ha mencionado anteriormente y caracterista que comparte con los \textit{BDDs}.
 
 \begin{figure}
 \begin{align*}
@@ -109,11 +109,11 @@ P \iff Q &= or\ 1\ (or\ P_{ANF}\ Q_{ANF}) \\
 
 \subsubsection{Función \textit{and}}
 
-Esta función recibe dos polinomios y calcula la multiplicación de ambos, asumiendo que están en su forma reducida, se procede a realizar toda posible distribución entre los monomios de ambos y reduciendo en el caso que sea posible para obetener el polinomio más pequeño; el cual es único.
+Esta función recibe dos polinomios y calcula la multiplicación de ambos, asumiendo que están en su forma reducida, se procede a realizar toda posible distribución entre los monomios de ambos y reduciendo en el caso que sea posible para obetener el polinomio más pequeño; el cual es único. Siendo esta la función que posee mayor complejidad algorítmica, y la que lleva más tiempo de calcular, es donde nos centraremos en secciones siguientes y sobre todo en el capítulo que viene. Es una función que se usa con mucha frecuencia, por lo que será nuestro punto clave para realizar pruebas en paralelo. Llega un punto que es una necesidad porque si no efectúa una construcción incremental, la memoria no sería suficiente para reducir el polinomio al final de la construcción.
 
 \subsubsection{Función \textit{or}}
 
-Esta función recibe dos polinomios y calcula la suma de ambos, asumiendo que están en su forma reducida. Los mismos tendrán monomios únicos para cada polinomio pero puede estar repetidos entre ellos, por lo que esta suma efectua un proceso de reducción y devuelve el polinomio más pequeño; que resulta ser único.
+Esta función recibe dos polinomios y calcula la suma de ambos, asumiendo que están en su forma reducida. Los mismos tendrán monomios únicos para cada polinomio pero puede estar repetidos entre ellos, por lo que esta suma efectua un proceso de reducción y devuelve el polinomio más pequeño; que resulta ser único. Aunque esta función también es constantemente usada a lo largo de la ejecución, su complejidad no se compara con \textit{and} y se ha decidido mantener esta función a lo largo de la implementación.
 
 \paragraph{Polinomio no vacío}
 
