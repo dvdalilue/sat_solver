@@ -10,5 +10,5 @@
 
 ANF* xor_anf_op (ANF *p, ANF *q);
 ANF* and_anf_op (ANF *p, ANF *q);
-ANF* map_anf_bs (char *bs, ANF *p);
+ANF* map_bs_cpu (char *bs, ANF *p);
 ANF* anf_op (Proposition *p);

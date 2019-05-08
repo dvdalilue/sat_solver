@@ -60,7 +60,7 @@ ANF* xor_anf_op (ANF *p, ANF *q) {
  * operation between each monomial and 'bs', returning a new
  * polynomial with unique monomials but disordered.
  */
-ANF* map_anf_bs (char *bs, ANF *p) {
+ANF* map_bs_cpu (char *bs, ANF *p) {
     ANF *result = empty_anf();
     char *aux = NULL;
 
@@ -103,7 +103,7 @@ ANF* and_anf_op (ANF *p, ANF *q) {
 
     for (int i = 1; i < p->monomials; i++) {
         prev = result;
-        maped = map_bs_gpu(get_anf_bs(p, i), q);
+        maped = map_bs_cpu(get_anf_bs(p, i), q);
         merge_sort_anf(maped);
         result = xor_anf_op(prev, maped);
         free_anf(maped);
