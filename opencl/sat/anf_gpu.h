@@ -13,5 +13,6 @@
 
 #include "anf_op_lib.h"
 
+void print_device_info(void);
 ANF* map_bs_gpu (char *bs, ANF *p);
 void releaseAll (void);

@@ -26,19 +26,6 @@ cl_command_queue command_queue = NULL;
 cl_program program = NULL;
 
 /*
- * Prints the device information 'name : vendor'
- */
-static void print_device_info(cl_device_id device) {
-    char name[128];
-    char vendor[128];
-
-    clGetDeviceInfo(device, CL_DEVICE_NAME, 128, name, NULL);
-    clGetDeviceInfo(device, CL_DEVICE_VENDOR, 128, vendor, NULL);
-
-    fprintf(stdout, "%s : %s\n", name, vendor);
-}
-
-/*
  * Returns the value of 'device_id', if it is not NULL.
  * Otherwise, gets the GPU device ID, it is assigned to
  * 'device_id' and returned.
@@ -168,10 +155,10 @@ ANF* bstringToANF (char *bstring, int monomials) {
 }
 
 /*
- * GPU implementation of 'map_anf_bs'. See anf_op.c file.
+ * GPU implementation of 'map_bs_cpu'. See anf_op.c file.
  */
 ANF* map_bs_gpu (char *bs, ANF *p) {
-    cl_int ret;
+    cl_int ret = 0;
     // Get device information
     device_id = get_device_id(&ret);
     // Create an OpenCL context
@@ -231,4 +218,22 @@ void releaseAll (void) {
     ret = clReleaseContext(context);
     ret = clReleaseProgram(program);
     ret = clReleaseCommandQueue(command_queue);
+}
+
+/*
+ * Prints the device information 'name : vendor'
+ */
+void print_device_info(void) {
+    char name[128];
+    char vendor[128];
+
+    cl_int ret = 0;
+    device_id = get_device_id(&ret);
+
+    clGetDeviceInfo(device_id, CL_DEVICE_NAME, 128, name, NULL);
+    clGetDeviceInfo(device_id, CL_DEVICE_VENDOR, 128, vendor, NULL);
+
+    device_id = NULL;
+
+    fprintf(stdout, "%s : %s\n", name, vendor);
 }
