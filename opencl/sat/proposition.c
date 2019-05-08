@@ -179,7 +179,7 @@ void destroy_prop (Proposition *p) {
 void prop_to_s (Proposition *p) {
     switch (p->kind) {
         case 0:
-            fprintf(stdout, "%c", (char) p->prop->stm->value);
+            fprintf(stdout, "%d", p->prop->stm->value);
             break;
         case 1:
             fprintf(stdout, "neg (");
